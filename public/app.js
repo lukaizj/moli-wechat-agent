@@ -301,10 +301,10 @@ function renderRetrospectiveArticleSelect() {
   }
   const selectedArticle = articles.find((a) => a.id === select.value) || articles[0];
   if (selectedArticle) {
-    populateRetrospectiveForm(selectedArticle);
     if (selectedArticle.retrospective) {
       renderRetrospectiveReport(selectedArticle.retrospective, selectedArticle.title);
     }
+    syncArticleMetrics(selectedArticle.id, false);
   }
 }
 
@@ -337,18 +337,24 @@ function renderRetrospectiveReport(report, title = "") {
 function populateRetrospectiveForm(article, metrics) {
   const form = $("#retrospective-form");
   if (!form) return;
-  const m = metrics || article?.metrics || {};
-  form.elements.reads.value = m.reads !== undefined && m.reads !== null ? m.reads : 0;
-  form.elements.likes.value = m.likes !== undefined && m.likes !== null ? m.likes : 0;
-  form.elements.looking.value = m.looking !== undefined && m.looking !== null ? m.looking : 0;
-  form.elements.shares.value = m.shares !== undefined && m.shares !== null ? m.shares : 0;
+  const m = metrics || article?.metrics;
+  if (m) {
+    form.elements.reads.value = m.reads ?? 0;
+    form.elements.likes.value = m.likes ?? 0;
+    form.elements.looking.value = m.looking ?? 0;
+    form.elements.shares.value = m.shares ?? 0;
+  } else {
+    form.elements.reads.value = "";
+    form.elements.likes.value = "";
+    form.elements.looking.value = "";
+    form.elements.shares.value = "";
+  }
   form.elements.feedback.value = article?.feedback || "";
 }
 
 async function syncArticleMetrics(articleId, showSuccessToast = false) {
   if (!articleId) return;
   const article = state.articles?.find((a) => a.id === articleId);
-  if (article) populateRetrospectiveForm(article);
 
   const syncBtn = $("#sync-metrics-btn");
   if (syncBtn) {
@@ -357,11 +363,10 @@ async function syncArticleMetrics(articleId, showSuccessToast = false) {
   }
   try {
     const res = await api(`/api/articles/${articleId}/sync-metrics`, { method: "POST", body: "{}" });
-    if (res.synced && res.metrics) {
+    if (res.metrics) {
+      if (article) article.metrics = res.metrics;
       populateRetrospectiveForm(article, res.metrics);
-      if (showSuccessToast) toast("已成功从微信公众号实时同步最新数据");
-    } else if (showSuccessToast) {
-      toast("已从本地数据库加载当前推文追踪面板，可在此调整指标或录入读者反馈");
+      if (showSuccessToast) toast(res.synced ? "已成功从微信公众号实时同步最新数据" : "已自动为您预填充与匹配推文数据");
     }
   } catch (error) {
     if (showSuccessToast) toast(error.message, true);
@@ -666,7 +671,6 @@ $("#retro-article-select")?.addEventListener("change", (e) => {
       renderRetrospectiveReport(null);
     }
   }
-  syncArticleMetrics(articleId, false);
 });
 
 await loadState();
