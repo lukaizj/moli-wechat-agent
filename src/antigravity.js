@@ -68,3 +68,21 @@ export async function runAntigravityImage(prompt, outputPath, config = {}) {
     return outputPath;
   }
 }
+
+export async function runAntigravityStructured({ prompt, schema, config = {} }) {
+  const cmd = config.antigravityPath || "gemini";
+  const schemaStr = JSON.stringify(schema);
+  const sysPrompt = `${prompt}\n\n【极其重要】：只返回符合以下 JSON Schema 的纯 JSON 对象，不要包含任何 markdown 格式化标记或解释性文字。\nJSON Schema: ${schemaStr}`;
+  try {
+    const { stdout } = await runCommand(cmd, ["-y", "-p", sysPrompt], {
+      cwd: config.rootDir || process.cwd(),
+      timeout: config.antigravityTimeoutMs || 3 * 60_000,
+    });
+    const cleanJson = stdout.replace(/```json/gi, "").replace(/```/g, "").trim();
+    const match = cleanJson.match(/\{[\s\S]*\}/);
+    if (match) return JSON.parse(match[0]);
+    return JSON.parse(cleanJson);
+  } catch (error) {
+    throw new Error(`Gemini (Antigravity) 文本引擎执行失败: ${error.message}`);
+  }
+}

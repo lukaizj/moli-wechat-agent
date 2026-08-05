@@ -188,22 +188,43 @@
             <section class="settings-intro">
               <span class="section-label">PUBLICATION DNA</span>
               <h2>把公众号的判断，<br />写进 Agent 的日常。</h2>
-              <p>主题决定写什么，读者与语气决定怎么写。成稿会经过 Humanizer-zh 二次编辑，并按 gzh-design-skill 的主题规范排版和校验；所有密钥只放在服务器的 <code>.env</code>。</p>
+              <p>主题决定写什么，读者与语调决定怎么写。支持自由切换 DeepSeek、GPT 与 Gemini 引擎，所有密钥只保存在服务器的 <code>.env</code>。</p>
               <div class="setup-status">
                 <strong>接入状态</strong>
                 <div><span id="settings-openai">○ 内容引擎</span><span id="settings-wechat">○ 微信公众号</span></div>
+              </div>
+              <div class="column-bar">
+                <div class="column-bar-header">
+                  <span>当前栏目：</span>
+                  <span id="column-count" class="count-badge">0 个</span>
+                </div>
+                <div id="column-list" class="column-tab-list"></div>
               </div>
             </section>
 
             <div class="settings-fields card">
               <div class="field-row two-columns">
-                <label><span>公众号名称</span><input name="accountName" required /></label>
+                <label><span>公众号刊物/栏目名称</span><input name="accountName" required /></label>
                 <label><span>署名</span><input name="author" required /></label>
               </div>
-              <label><span>长期主题</span><input name="theme" required /><small>例如：AI 与个体创造力、城市生活方式、消费品牌观察</small></label>
-              <label><span>目标读者</span><textarea name="audience" rows="3" required></textarea></label>
-              <label><span>写作气质</span><textarea name="tone" rows="3" required></textarea></label>
-              <label><span>默认风格参考推文（选填）</span><textarea name="referenceArticle" rows="4" placeholder="在此粘贴希望日常自动任务默认模仿的公众号爆款推文..."></textarea><small>配置后，自动运行将默认分析并模仿此范文的开篇与段落文风。</small></label>
+              
+              <div class="field-row two-columns">
+                <label><span>文案生成引擎</span><select name="aiProvider">
+                  <option value="deepseek">DeepSeek (官方 API)</option>
+                  <option value="codex">GPT (ChatGPT 会员 / OpenAI)</option>
+                  <option value="gemini">Gemini (Antigravity 引擎)</option>
+                </select><small>选择撰写公众号文章文案的 AI 引擎</small></label>
+                <label><span>视觉配图引擎</span><select name="imageProvider">
+                  <option value="codex">GPT (ChatGPT 会员 / OpenAI)</option>
+                  <option value="gemini">Gemini (Antigravity 生图)</option>
+                </select><small>选择生成封面与正文插图的引擎</small></label>
+              </div>
+
+              <label><span>长期主题</span><input name="theme" required /><small>例如：AI 工具与个体效率、城市生活方式、消费品牌观察</small></label>
+              <label><span>目标读者</span><textarea name="audience" rows="2" required></textarea></label>
+              <label><span>写作气质</span><textarea name="tone" rows="2" required></textarea></label>
+              <label><span>默认风格参考推文（选填）</span><textarea name="referenceArticle" rows="3" placeholder="在此粘贴希望日常自动任务默认模仿的公众号爆款推文..."></textarea><small>配置后，自动运行将默认分析并模仿此范文的开篇与段落文风。</small></label>
+
               <div class="field-row two-columns">
                 <label><span>目标篇幅</span><div class="suffix-input"><input name="targetLength" type="number" min="600" max="5000" /><em>字</em></div></label>
                 <label><span>定时生成</span><div class="schedule-input"><input name="scheduleTime" type="time" /><label class="switch"><input name="scheduleEnabled" type="checkbox" /><span></span></label></div></label>
@@ -218,62 +239,15 @@
                   <option value="moyu-ticket">摸鱼票据风</option>
                   <option value="olive-journal">橄榄手记</option>
                 </select><small>自动模式会按文章题材选择主题。</small></label>
-                <label><span>生图引擎</span><select name="imageProvider">
-                  <option value="codex">GPT (ChatGPT 会员 / OpenAI)</option>
-                  <option value="gemini">Gemini (Antigravity 生图)</option>
-                </select><small>选择使用 GPT 还是 Gemini 生图</small></label>
+                <label><span>Humanizer 去 AI 味</span><div class="schedule-input"><small>成稿后按 Humanizer-zh 规则复核</small><label class="switch"><input name="humanizeEnabled" type="checkbox" /><span></span></label></div></label>
               </div>
-              <label><span>Humanizer 去 AI 味</span><div class="schedule-input"><small>成稿后按 Humanizer-zh 规则复核</small><label class="switch"><input name="humanizeEnabled" type="checkbox" /><span></span></label></div></label>
-              <label><span>配图风格</span><textarea name="imageStyle" rows="3" required></textarea></label>
+              <label><span>配图风格提示词</span><textarea name="imageStyle" rows="2" required></textarea></label>
               <div class="form-footer">
                 <p>保存后，下一次运行立即使用新设定。</p>
                 <button class="primary-button compact" type="submit"><span><strong>保存公众号设定</strong></span></button>
               </div>
             </div>
           </form>
-          <section class="columns-panel card">
-            <div class="card-heading">
-              <div><span class="section-label">COLUMNS</span><h3>栏目管理</h3></div>
-              <span class="count-badge" id="column-count">0 个</span>
-            </div>
-            <p class="columns-hint">不同栏目可拥有独立的主题、读者与排版风格；切换栏目即切换下一次运行的设定。微信公众号凭据为全局共用。</p>
-            <div id="column-list" class="column-list"></div>
-            <form id="column-form" class="column-form">
-              <input type="hidden" name="id" />
-              <label><span>栏目名称</span><input name="name" required /></label>
-              <label><span>长期主题</span><input name="theme" required /></label>
-              <label><span>目标读者</span><textarea name="audience" rows="2" required></textarea></label>
-              <label><span>写作气质</span><textarea name="tone" rows="2" required></textarea></label>
-              <label><span>风格参考推文（选填）</span><textarea name="referenceArticle" rows="3" placeholder="该栏目默认模仿的范文正文..."></textarea></label>
-              <div class="field-row two-columns">
-                <label><span>署名</span><input name="author" /></label>
-                <label><span>目标篇幅</span><div class="suffix-input"><input name="targetLength" type="number" min="600" max="5000" /><em>字</em></div></label>
-              </div>
-              <div class="field-row two-columns">
-                <label><span>排版主题</span><select name="designTheme">
-                  <option value="auto">自动匹配</option>
-                  <option value="moyu-green">摸鱼绿</option>
-                  <option value="red-white">红白色系</option>
-                  <option value="graphite-minimal">石墨极简风</option>
-                  <option value="zen-whitespace">留白禅意风</option>
-                  <option value="moyu-ticket">摸鱼票据风</option>
-                  <option value="olive-journal">橄榄手记</option>
-                </select></label>
-                <label><span>生图引擎</span><select name="imageProvider">
-                  <option value="codex">GPT (ChatGPT 会员 / OpenAI)</option>
-                  <option value="gemini">Gemini (Antigravity 生图)</option>
-                </select></label>
-              </div>
-              <label><span>配图风格</span><textarea name="imageStyle" rows="2"></textarea></label>
-              <div class="form-footer">
-                <p id="column-form-hint">新增一个栏目</p>
-                <div>
-                  <button type="button" class="secondary-button" id="column-reset">清空</button>
-                  <button type="submit" class="primary-button compact"><span><strong>保存栏目</strong></span></button>
-                </div>
-              </div>
-            </form>
-          </section>
         </section>
       </main>
     </div>

@@ -106,6 +106,7 @@ const allowedSettings = new Set([
   "referenceArticle",
   "humanizeEnabled",
   "designTheme",
+  "aiProvider",
   "imageProvider",
   "imageStyle",
   "scheduleEnabled",

@@ -62,18 +62,24 @@ function goTo(view) {
 
 function renderIntegrations() {
   const { openai, ai = openai, aiProvider, imageProvider, wechat } = state.integrations;
-  const aiName =
-    aiProvider === "codex"
-      ? "ChatGPT 会员"
-      : aiProvider === "deepseek"
-        ? `DeepSeek 文案 · ${imageProvider === "codex" ? "ChatGPT 配图" : "OpenAI 配图"}`
-        : "OpenAI API";
+  const currentAiProvider = state.settings?.aiProvider || aiProvider || "codex";
+  const currentImgProvider = state.settings?.imageProvider || imageProvider || "codex";
+  const aiTextName =
+    currentAiProvider === "gemini"
+      ? "Gemini"
+      : currentAiProvider === "deepseek"
+        ? "DeepSeek"
+        : currentAiProvider === "codex"
+          ? "ChatGPT 会员"
+          : "OpenAI";
+  const imgTextName = currentImgProvider === "gemini" ? "Gemini" : "GPT";
+  const label = `${aiTextName} 文案 + ${imgTextName} 配图`;
   $("#openai-dot").classList.toggle("ready", ai);
   $("#wechat-dot").classList.toggle("ready", wechat);
-  $("#openai-label").textContent = ai ? `${aiName}已接入` : `${aiName}待配置`;
+  $("#openai-label").textContent = ai ? `${label} 已就绪` : `${label} 待配置`;
   $("#wechat-label").textContent = wechat ? "已接入" : "待配置";
-  $("#settings-openai").textContent = `${ai ? "●" : "○"} 内容引擎 · ${aiName}${ai ? "已接入" : "待配置"}`;
-  $("#settings-wechat").textContent = `${wechat ? "●" : "○"} 微信公众号${wechat ? "已接入" : "待配置"}`;
+  $("#settings-openai").textContent = `${ai ? "●" : "○"} 内容引擎 · ${label}${ai ? " 已就绪" : " 待配置"}`;
+  $("#settings-wechat").textContent = `${wechat ? "●" : "○"} 微信公众号${wechat ? " 已接入" : " 待配置"}`;
   $("#settings-openai").classList.toggle("ready", ai);
   $("#settings-wechat").classList.toggle("ready", wechat);
 }
@@ -313,28 +319,25 @@ function cancelEdit() {
 
 function renderColumns() {
   const columns = state.settings.columns || [];
-  $("#column-count").textContent = `${columns.length} 个`;
+  const badge = $("#column-count");
+  if (badge) badge.textContent = `${columns.length} 个`;
   const list = $("#column-list");
+  if (!list) return;
   if (!columns.length) {
-    list.innerHTML = '<div class="draft-list-empty">还没有栏目，先在下方新增一个。</div>';
+    list.innerHTML = '<span class="draft-list-empty">暂无栏目</span>';
     return;
   }
   list.innerHTML = columns
     .map((column) => {
       const active = column.id === state.settings.activeColumnId;
-      return `<div class="column-row ${active ? "active" : ""}" data-column-id="${column.id}">
-        <div><strong>${escapeHtml(column.name)}</strong><small>${escapeHtml(column.theme)}</small></div>
-        <div class="column-actions">
-          <button class="text-button" data-action="edit">编辑</button>
-          <button class="text-button" data-action="activate">${active ? "使用中" : "切换"}</button>
-        </div>
-      </div>`;
+      return `<button type="button" class="column-tab ${active ? "active" : ""}" data-column-id="${column.id}">
+        <span>${escapeHtml(column.name)}</span>${active ? ' <small>(当前)</small>' : ""}
+      </button>`;
     })
     .join("");
-  $$("[data-column-id]", list).forEach((row) => {
-    const id = row.dataset.columnId;
-    row.querySelector('[data-action="edit"]').addEventListener("click", () => fillColumnForm(id));
-    row.querySelector('[data-action="activate"]').addEventListener("click", () => activateColumn(id));
+  $$("[data-column-id]", list).forEach((btn) => {
+    const id = btn.dataset.columnId;
+    btn.addEventListener("click", () => activateColumn(id));
   });
 }
 
@@ -346,41 +349,6 @@ async function activateColumn(id) {
   } catch (error) {
     toast(error.message, true);
   }
-}
-
-function fillColumnForm(id) {
-  const column = (state.settings.columns || []).find((item) => item.id === id);
-  if (!column) return;
-  const form = $("#column-form");
-  for (const [key, value] of Object.entries(column)) {
-    const input = form.elements.namedItem(key);
-    if (!input) continue;
-    input.value = value;
-  }
-  $("#column-form-hint").textContent = `正在编辑栏目：${column.name}`;
-  form.scrollIntoView({ behavior: "smooth", block: "center" });
-}
-
-async function saveColumn(event) {
-  event.preventDefault();
-  const formData = new FormData(event.currentTarget);
-  const body = Object.fromEntries(formData.entries());
-  body.targetLength = Number(body.targetLength);
-  try {
-    await api("/api/columns", { method: "PUT", body: JSON.stringify(body) });
-    toast("栏目已保存");
-    resetColumnForm();
-    await loadState();
-  } catch (error) {
-    toast(error.message, true);
-  }
-}
-
-function resetColumnForm() {
-  const form = $("#column-form");
-  form.reset();
-  form.elements.namedItem("id").value = "";
-  $("#column-form-hint").textContent = "新增一个栏目";
 }
 
 let uploadedImagePaths = [];
@@ -484,7 +452,5 @@ $("#imitate-run-button").addEventListener("click", startImitationRun);
 $("#edit-button").addEventListener("click", editSelected);
 $("#edit-save").addEventListener("click", saveEdit);
 $("#edit-cancel").addEventListener("click", cancelEdit);
-$("#column-form").addEventListener("submit", saveColumn);
-$("#column-reset").addEventListener("click", resetColumnForm);
 
 await loadState();
