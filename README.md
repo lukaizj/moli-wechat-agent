@@ -2,6 +2,12 @@
 
 **墨流 (Moli WeChat Agent)** 是一个全流程自动化的微信公众号内容 Agent。从指定的公众号定位与长期主题出发，自动完成**联网信号研究**、**自主选题**、**中文初稿撰写**、**Humanizer 去 AI 味二次编辑**、**AI 配图生成**、**公众号内联 HTML 排版校验**，并最终**将草稿写入微信公众号草稿箱**，停在人工审核发布之前。
 
+<p align="center">
+  <img src="docs/assets/dashboard.png" width="32%" alt="今日任务控制台" />
+  <img src="docs/assets/drafts.png" width="32%" alt="草稿库与实时预览" />
+  <img src="docs/assets/settings.png" width="32%" alt="公众号设定与范文配置" />
+</p>
+
 ---
 
 ## 🌟 核心特性
