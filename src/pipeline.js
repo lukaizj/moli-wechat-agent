@@ -123,7 +123,12 @@ export class Pipeline {
   async execute(runId, options = {}) {
     const settings = this.store.snapshot().settings;
     const refArticle = options.referenceArticle || settings.referenceArticle || "";
-    const aiReady = isAiReady(this.config);
+    const currentConfig = {
+      ...this.config,
+      aiProvider: settings.aiProvider || this.config.aiProvider,
+      imageProvider: settings.imageProvider || this.config.imageProvider,
+    };
+    const aiReady = isAiReady(currentConfig);
     const wechatReady = Boolean(this.config.wechatAppId && this.config.wechatAppSecret);
     const mode = aiReady ? "live" : "demo";
     const runStartedAt = new Date().toISOString();
@@ -133,7 +138,7 @@ export class Pipeline {
       await fs.mkdir(this.generatedDir, { recursive: true });
       await this.updateRun(runId, {
         status: "running",
-        mode: aiReady ? this.config.aiProvider || "openai" : mode,
+        mode: aiReady ? currentConfig.aiProvider || "openai" : mode,
         startedAt: runStartedAt,
       });
 

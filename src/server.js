@@ -41,6 +41,10 @@ if (config.aiProvider === "codex" || config.imageProvider === "codex") {
 
 const store = new StateStore(path.join(dataDir, "state.json"));
 await store.init();
+const initialSettings = store.snapshot().settings || {};
+if (initialSettings.aiProvider) config.aiProvider = initialSettings.aiProvider;
+if (initialSettings.imageProvider) config.imageProvider = initialSettings.imageProvider;
+
 const pipeline = new Pipeline({ store, config, generatedDir: path.join(dataDir, "generated") });
 const app = express();
 
@@ -151,7 +155,18 @@ app.put("/api/settings", async (request, response, next) => {
     if (patch.targetLength) patch.targetLength = Math.min(5000, Math.max(600, Number(patch.targetLength)));
     if (patch.humanizeEnabled !== undefined) patch.humanizeEnabled = Boolean(patch.humanizeEnabled);
     if (patch.designTheme && !allowedDesignThemes.has(patch.designTheme)) throw new Error("未知的公众号排版主题");
-    await store.update((state) => Object.assign(state.settings, patch));
+
+    if (patch.aiProvider) config.aiProvider = patch.aiProvider;
+    if (patch.imageProvider) config.imageProvider = patch.imageProvider;
+
+    await store.update((state) => {
+      Object.assign(state.settings, patch);
+      const activeId = state.settings.activeColumnId || "default";
+      const activeCol = (state.settings.columns || []).find((col) => col.id === activeId);
+      if (activeCol) {
+        Object.assign(activeCol, patch);
+      }
+    });
     response.json({ ok: true, settings: store.snapshot().settings });
   } catch (error) {
     next(error);
@@ -198,6 +213,8 @@ app.post("/api/runs", async (request, response, next) => {
         if (target) {
           state.settings.activeColumnId = columnId;
           Object.assign(state.settings, target);
+          if (target.aiProvider) config.aiProvider = target.aiProvider;
+          if (target.imageProvider) config.imageProvider = target.imageProvider;
         }
       });
     }
@@ -246,7 +263,19 @@ app.patch("/api/articles/:id", async (request, response, next) => {
   }
 });
 
-const columnFields = ["name", "theme", "audience", "tone", "author", "targetLength", "designTheme", "imageStyle"];
+const columnFields = [
+  "name",
+  "theme",
+  "audience",
+  "tone",
+  "author",
+  "targetLength",
+  "referenceArticle",
+  "designTheme",
+  "aiProvider",
+  "imageProvider",
+  "imageStyle",
+];
 const columnFieldSet = new Set(columnFields);
 
 app.put("/api/columns", async (request, response, next) => {
@@ -286,12 +315,26 @@ app.post("/api/columns/:id/activate", async (request, response, next) => {
     await store.update((state) => {
       const column = (state.settings.columns || []).find((item) => item.id === targetId);
       if (!column) throw new Error("未找到该栏目");
-      const editorial = ["theme", "audience", "tone", "author", "targetLength", "designTheme", "imageStyle"];
+      const editorial = [
+        "name",
+        "theme",
+        "audience",
+        "tone",
+        "author",
+        "targetLength",
+        "referenceArticle",
+        "designTheme",
+        "aiProvider",
+        "imageProvider",
+        "imageStyle",
+      ];
       for (const key of editorial) {
         if (column[key] !== undefined) state.settings[key] = column[key];
       }
       state.settings.activeColumnId = targetId;
       activated = column;
+      if (column.aiProvider) config.aiProvider = column.aiProvider;
+      if (column.imageProvider) config.imageProvider = column.imageProvider;
     });
     logger.info("server", `切换到栏目 ${targetId}`, { name: activated.name });
     response.json({ ok: true, column: activated, settings: store.snapshot().settings });
