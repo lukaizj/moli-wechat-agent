@@ -40,27 +40,11 @@ export async function checkAntigravityAvailable(config = {}) {
 
 export async function runAntigravityImage(prompt, outputPath, config = {}) {
   await fs.mkdir(path.dirname(outputPath), { recursive: true });
-  const cmd = config.antigravityPath || "gemini";
-  const systemPrompt = `请调用图像生成能力为微信公众号生成横向排版精美插图，保存至绝对路径 ${outputPath}。不要包含任何文字、Logo 或水印。\n视觉提示：${prompt}`;
-  try {
-    await runCommand(cmd, ["-y", "-p", systemPrompt], {
-      cwd: config.rootDir || process.cwd(),
-      timeout: config.antigravityTimeoutMs || 3000,
-    });
-    const exists = await fs
-      .stat(outputPath)
-      .then((s) => s.isFile())
-      .catch(() => false);
-    if (exists) return outputPath;
-  } catch {
-    // fallback
-  }
-
   if (config.codexLoggedIn) {
     try {
       return await runCodexImage(prompt, outputPath, config);
     } catch {
-      // fallback to SVG placeholder
+      // fallback
     }
   }
 
