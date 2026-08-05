@@ -179,7 +179,7 @@ export function buildWechatHtml(article, topic, bodyImageUrl = "{{BODY_IMAGE_URL
         ? `<section style="margin:28px 12px;padding:18px 20px;border-left:4px solid ${theme.primary};background:${theme.pale};color:${theme.dark};font-size:${theme.bodySize};line-height:${theme.lineHeight};">${leaf(section.callout)}</section>`
         : "";
       const sectionImage = sectionUrls[index]
-        ? `<section style="margin:0 12px 30px;"><img src="${escapeHtml(sectionUrls[index])}" alt="${escapeHtml(normalizePunctuation(section.heading))}" style="display:block;width:100%;height:auto;margin:0;border-radius:4px;" /></section>`
+        ? `<section style="margin:0 12px 30px;"><img src="${escapeHtml(sectionUrls[index])}" alt="${escapeHtml(normalizePunctuation(section.heading))}" referrerpolicy="no-referrer" style="display:block;width:100%;height:auto;margin:0;border-radius:4px;" /></section>`
         : "";
       return `${sectionHeading(section, index, theme)}\n${paragraphs}\n${callout}\n${sectionImage}`;
     })
@@ -205,7 +205,7 @@ export function buildWechatHtml(article, topic, bodyImageUrl = "{{BODY_IMAGE_URL
       <p style="margin:0;color:${theme.dark};font-size:18px;line-height:1.75;font-weight:600;">${markedText(article.lead, keywords, theme)}</p>
     </section>
     <section style="margin:0 12px 38px;">
-      <img src="${escapeHtml(bodyImageUrl)}" alt="${escapeHtml(normalizePunctuation(article.title))}" style="display:block;width:100%;height:auto;margin:0;border-radius:4px;" />
+      <img src="${escapeHtml(bodyImageUrl)}" alt="${escapeHtml(normalizePunctuation(article.title))}" referrerpolicy="no-referrer" style="display:block;width:100%;height:auto;margin:0;border-radius:4px;" />
     </section>
     ${sections}
     <section style="margin:42px 12px 10px;padding:22px;background:${theme.dark};color:#FFFFFF;">
@@ -219,7 +219,7 @@ export function buildWechatHtml(article, topic, bodyImageUrl = "{{BODY_IMAGE_URL
     allowedTags: ["section", "p", "span", "strong", "img", "h2", "ol", "li", "a"],
     allowedAttributes: {
       "*": ["style", "leaf"],
-      img: ["src", "alt", "style"],
+      img: ["src", "alt", "style", "referrerpolicy"],
       a: ["href", "style"],
     },
     allowedSchemes: ["http", "https"],

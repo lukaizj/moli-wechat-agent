@@ -145,8 +145,9 @@ function selectArticle(articleId) {
   $("#preview-title").textContent = article.title;
   $("#preview-date").textContent = dateText(article.createdAt);
   $("#preview-account").textContent = state.settings.accountName;
+  $("#preview-cover").referrerPolicy = "no-referrer";
   $("#preview-cover").src = article.coverUrl;
-  $("#preview-html").innerHTML = article.html;
+  $("#preview-html").innerHTML = article.previewHtml || article.html;
   $("#preview-why").textContent = article.topic.whyNow;
   $("#preview-keywords").innerHTML = article.topic.keywords.map((word) => `<span>${escapeHtml(word)}</span>`).join("");
   const humanizerScore = article.humanizer?.total ? ` · Humanizer ${article.humanizer.total}/50` : "";
