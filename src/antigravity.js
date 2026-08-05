@@ -38,8 +38,42 @@ export async function checkAntigravityAvailable(config = {}) {
   }
 }
 
+export async function runGeminiApiImage(prompt, outputPath, apiKey) {
+  const url = `https://generativelanguage.googleapis.com/v1beta/models/imagen-3.0-generate-002:generateImages?key=${apiKey}`;
+  const response = await fetch(url, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      prompt: `${prompt}\n横向编辑插画，主体清晰，四周保留安全留白；画面中不要出现文字、字母、数字、标志或水印。`,
+      config: {
+        numberOfImages: 1,
+        aspectRatio: "3:2",
+        outputMimeType: "image/png",
+      },
+    }),
+  });
+  if (!response.ok) {
+    const text = await response.text();
+    throw new Error(`Gemini Imagen API 错误 (${response.status}): ${text}`);
+  }
+  const json = await response.json();
+  const b64 = json.generatedImages?.[0]?.image?.imageBytes;
+  if (!b64) throw new Error("Gemini Imagen API 未返回图像数据");
+  await fs.writeFile(outputPath, Buffer.from(b64, "base64"));
+  return outputPath;
+}
+
 export async function runAntigravityImage(prompt, outputPath, config = {}) {
   await fs.mkdir(path.dirname(outputPath), { recursive: true });
+  const apiKey = config.geminiApiKey || process.env.GEMINI_API_KEY;
+  if (apiKey) {
+    try {
+      return await runGeminiApiImage(prompt, outputPath, apiKey);
+    } catch {
+      // fallback
+    }
+  }
+
   if (config.codexLoggedIn) {
     try {
       return await runCodexImage(prompt, outputPath, config);
