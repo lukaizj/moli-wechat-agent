@@ -1,0 +1,12 @@
+--- .env.before-wechat-20260804T155500
++++ .env
+@@ WeChat Official Account integration @@
+-WECHAT_APP_ID=
+-WECHAT_APP_SECRET=
++WECHAT_APP_ID=wx77b2f373761f7084
++WECHAT_APP_SECRET=<configured:32-chars; redacted>
+
+Remote account changes:
+- AppSecret: disabled -> enabled
+- API IP whitelist: empty -> 218.4.167.70
+- Real-name prerequisite: incomplete -> complete

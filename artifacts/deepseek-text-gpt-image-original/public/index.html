@@ -1,0 +1,196 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#10172a" />
+    <title>墨流 · 公众号内容 Agent</title>
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body>
+    <div class="app-shell">
+      <aside class="sidebar">
+        <a class="brand" href="#dashboard" aria-label="墨流首页">
+          <span class="brand-mark">墨</span>
+          <span><strong>墨流</strong><small>MÒLIÚ AGENT</small></span>
+        </a>
+
+        <nav class="nav" aria-label="主导航">
+          <button class="nav-item active" data-view="dashboard"><span>⌁</span> 今日任务</button>
+          <button class="nav-item" data-view="drafts"><span>▤</span> 草稿库 <b id="draft-count">0</b></button>
+          <button class="nav-item" data-view="settings"><span>⌘</span> 公众号设定</button>
+        </nav>
+
+        <div class="sidebar-bottom">
+          <div class="integration-mini">
+            <div><i id="openai-dot"></i><span>内容引擎</span><em id="openai-label">检查中</em></div>
+            <div><i id="wechat-dot"></i><span>公众号</span><em id="wechat-label">检查中</em></div>
+          </div>
+          <p>成稿只进入草稿箱<br />最终发布由你决定</p>
+        </div>
+      </aside>
+
+      <main>
+        <header class="topbar">
+          <div>
+            <p class="eyebrow" id="today-label">内容控制台</p>
+            <h1 id="page-title">今天，让 Agent 先动笔</h1>
+          </div>
+          <div class="top-actions">
+            <span class="agent-status"><i></i><span id="agent-status-text">Agent 待命</span></span>
+            <button class="icon-button" id="refresh-button" aria-label="刷新">↻</button>
+          </div>
+        </header>
+
+        <section class="view active" id="view-dashboard">
+          <div class="dashboard-grid">
+            <section class="run-card card">
+              <div class="run-copy">
+                <span class="section-label">AUTO ISSUE / 今日一期</span>
+                <h2>从一个主题，<br />走到一篇待审草稿。</h2>
+                <p>Agent 会研究最近变化，自主选题、成稿、配图，并把最终稿送进公众号草稿箱。</p>
+                <div class="theme-pill"><span>当前主题</span><strong id="theme-summary">—</strong></div>
+                <button class="primary-button" id="run-button">
+                  <span class="button-symbol">↗</span>
+                  <span><strong>生成今日文章</strong><small>预计 2–5 分钟</small></span>
+                </button>
+              </div>
+
+              <div class="issue-spine" aria-label="内容流水线">
+                <div class="spine-line"></div>
+                <div class="spine-step" data-step="research">
+                  <span class="step-index">01</span>
+                  <div><strong>研究选题</strong><small>最近 7 天的有效信号</small></div>
+                  <i></i>
+                </div>
+                <div class="spine-step" data-step="writing">
+                  <span class="step-index">02</span>
+                  <div><strong>完成成稿</strong><small>观点、结构与公众号排版</small></div>
+                  <i></i>
+                </div>
+                <div class="spine-step" data-step="image">
+                  <span class="step-index">03</span>
+                  <div><strong>生成配图</strong><small>封面与正文同一视觉</small></div>
+                  <i></i>
+                </div>
+                <div class="spine-step" data-step="wechat">
+                  <span class="step-index">04</span>
+                  <div><strong>送进草稿箱</strong><small>停在人工审核之前</small></div>
+                  <i></i>
+                </div>
+              </div>
+            </section>
+
+            <section class="brief-card card">
+              <div class="card-heading">
+                <div><span class="section-label">EDITORIAL BRIEF</span><h3>编辑边界</h3></div>
+                <button class="text-button" data-go="settings">调整</button>
+              </div>
+              <dl class="brief-list">
+                <div><dt>写给谁</dt><dd id="audience-summary">—</dd></div>
+                <div><dt>怎么写</dt><dd id="tone-summary">—</dd></div>
+                <div><dt>篇幅</dt><dd id="length-summary">—</dd></div>
+              </dl>
+              <div class="schedule-row">
+                <div><i id="schedule-dot"></i><span id="schedule-label">定时任务未开启</span></div>
+                <time id="schedule-time">—</time>
+              </div>
+            </section>
+
+            <section class="latest-card card">
+              <div class="card-heading">
+                <div><span class="section-label">LATEST DRAFT</span><h3>最新草稿</h3></div>
+                <button class="text-button" data-go="drafts">全部草稿</button>
+              </div>
+              <div id="latest-empty" class="empty-state">
+                <span>＋</span><strong>这里还没有草稿</strong><p>先跑一次完整流程，成稿会在这里等你。</p>
+              </div>
+              <article id="latest-draft" class="draft-row hidden"></article>
+            </section>
+
+            <section class="activity-card card">
+              <div class="card-heading">
+                <div><span class="section-label">RUN LOG</span><h3>最近运行</h3></div>
+              </div>
+              <div id="run-log" class="run-log"></div>
+            </section>
+          </div>
+        </section>
+
+        <section class="view" id="view-drafts">
+          <div class="drafts-layout">
+            <section class="draft-list-panel card">
+              <div class="card-heading sticky-heading">
+                <div><span class="section-label">DRAFT LIBRARY</span><h3>所有草稿</h3></div>
+                <span class="count-badge" id="draft-total">0 篇</span>
+              </div>
+              <div id="draft-list" class="draft-list"></div>
+            </section>
+            <section class="preview-panel card">
+              <div id="preview-empty" class="empty-state preview-empty"><span>↖</span><strong>选择一篇草稿</strong><p>在这里查看封面、选题依据和微信排版。</p></div>
+              <div id="article-preview" class="hidden">
+                <div class="preview-toolbar">
+                  <div><span class="status-badge" id="preview-status">本地预览</span><small id="preview-meta"></small></div>
+                  <div>
+                    <button class="secondary-button" id="push-button">写入公众号草稿箱</button>
+                    <a class="primary-link hidden" id="wechat-review-link" href="https://mp.weixin.qq.com/" target="_blank" rel="noreferrer">去公众号审核 ↗</a>
+                  </div>
+                </div>
+                <div class="phone-wrap">
+                  <article class="wechat-article">
+                    <h1 id="preview-title"></h1>
+                    <p class="wechat-meta"><span id="preview-date"></span> <span id="preview-account"></span></p>
+                    <img id="preview-cover" alt="文章封面" />
+                    <div id="preview-html"></div>
+                  </article>
+                </div>
+                <aside class="topic-note">
+                  <span class="section-label">WHY THIS TOPIC</span>
+                  <h3>为什么今天写它</h3>
+                  <p id="preview-why"></p>
+                  <div id="preview-keywords" class="keyword-list"></div>
+                </aside>
+              </div>
+            </section>
+          </div>
+        </section>
+
+        <section class="view" id="view-settings">
+          <form class="settings-form" id="settings-form">
+            <section class="settings-intro">
+              <span class="section-label">PUBLICATION DNA</span>
+              <h2>把公众号的判断，<br />写进 Agent 的日常。</h2>
+              <p>主题决定写什么，读者与语气决定怎么写。内容引擎可使用本机 ChatGPT 会员登录，公众号密钥仍只放在服务器的 <code>.env</code>。</p>
+              <div class="setup-status">
+                <strong>接入状态</strong>
+                <div><span id="settings-openai">○ 内容引擎</span><span id="settings-wechat">○ 微信公众号</span></div>
+              </div>
+            </section>
+
+            <div class="settings-fields card">
+              <div class="field-row two-columns">
+                <label><span>公众号名称</span><input name="accountName" required /></label>
+                <label><span>署名</span><input name="author" required /></label>
+              </div>
+              <label><span>长期主题</span><input name="theme" required /><small>例如：AI 与个体创造力、城市生活方式、消费品牌观察</small></label>
+              <label><span>目标读者</span><textarea name="audience" rows="3" required></textarea></label>
+              <label><span>写作气质</span><textarea name="tone" rows="3" required></textarea></label>
+              <div class="field-row two-columns">
+                <label><span>目标篇幅</span><div class="suffix-input"><input name="targetLength" type="number" min="600" max="5000" /><em>字</em></div></label>
+                <label><span>定时生成</span><div class="schedule-input"><input name="scheduleTime" type="time" /><label class="switch"><input name="scheduleEnabled" type="checkbox" /><span></span></label></div></label>
+              </div>
+              <label><span>配图风格</span><textarea name="imageStyle" rows="3" required></textarea></label>
+              <div class="form-footer">
+                <p>保存后，下一次运行立即使用新设定。</p>
+                <button class="primary-button compact" type="submit"><span><strong>保存公众号设定</strong></span></button>
+              </div>
+            </div>
+          </form>
+        </section>
+      </main>
+    </div>
+
+    <div class="toast" id="toast" role="status" aria-live="polite"></div>
+    <script type="module" src="/app.js"></script>
+  </body>
+</html>

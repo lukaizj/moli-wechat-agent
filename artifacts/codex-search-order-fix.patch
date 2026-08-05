@@ -1,0 +1,34 @@
+diff --git a/src/codex.js b/src/codex.js
+index d855e20..43820af 100644
+--- a/src/codex.js
++++ b/src/codex.js
+@@ -56,6 +56,7 @@ export function buildCodexArgs({
+   prompt,
+ }) {
+   return [
++    ...(search ? ["--search"] : []),
+     "exec",
+     "--ephemeral",
+     "--skip-git-repo-check",
+@@ -67,7 +68,6 @@ export function buildCodexArgs({
+     `model_reasoning_effort="${effort}"`,
+     "-m",
+     model,
+-    ...(search ? ["--search"] : []),
+     "--output-schema",
+     schemaPath,
+     "-o",
+diff --git a/test/codex.test.js b/test/codex.test.js
+index cee9743..07db863 100644
+--- a/test/codex.test.js
++++ b/test/codex.test.js
+@@ -18,7 +18,8 @@ test("Codex command is ephemeral, schema-bound, and read-only by default", () =>
+     search: true,
+     prompt: "test",
+   });
+-  assert.deepEqual(args.slice(0, 4), ["exec", "--ephemeral", "--skip-git-repo-check", "--sandbox"]);
++  assert.deepEqual(args.slice(0, 5), ["--search", "exec", "--ephemeral", "--skip-git-repo-check", "--sandbox"]);
++  assert.ok(args.indexOf("--search") < args.indexOf("exec"));
+   assert.ok(args.includes("read-only"));
+   assert.ok(args.includes("--search"));
+   assert.ok(args.includes("--output-schema"));

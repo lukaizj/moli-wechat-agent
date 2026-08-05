@@ -1,0 +1,27 @@
+{
+  "name": "moli-wechat-agent",
+  "version": "1.0.0",
+  "description": "自动选题、写作、配图并写入微信公众号草稿箱的内容 Agent",
+  "main": "src/server.js",
+  "directories": {
+    "test": "test"
+  },
+  "scripts": {
+    "test": "node --test",
+    "start": "node src/server.js",
+    "dev": "node --watch src/server.js",
+    "login:chatgpt": "codex login",
+    "check:chatgpt": "codex login status"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "MIT",
+  "type": "module",
+  "dependencies": {
+    "dotenv": "^17.4.2",
+    "express": "^5.2.1",
+    "openai": "^7.4.0",
+    "sanitize-html": "^2.17.6",
+    "zod": "^4.4.3"
+  }
+}

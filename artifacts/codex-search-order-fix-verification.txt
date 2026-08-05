@@ -1,0 +1,38 @@
+Objective
+Fix the failed manual run caused by placing the global Codex --search option after the exec subcommand.
+
+Changed branch
+- buildCodexArgs(): --search now appears before exec.
+
+Baseline behavior
+Input:
+  Manual content run with search=true.
+Literal output:
+  ChatGPT 会员内容引擎运行失败：Usage: codex exec [OPTIONS] [PROMPT] · codex exec [OPTIONS] <COMMAND> [ARGS] · For more information, try '--help'.
+Exit/result status:
+  Run 7f53df6e-bec7-4f43-b676-3b5e9072190d failed.
+
+Modified behavior: direct search smoke
+Command shape:
+  codex --search exec --ephemeral ...
+Literal structured result:
+  {"ok":true,"evidence":"OpenAI 官方网站首页已联网获取：https://openai.com/ 。页面标题为“OpenAI | Research & Deployment”，首页主导航包含 Research、Products、Business、Developers、Company；首页显著入口包括 ChatGPT 与 API Platform。"}
+Exit status: 0
+
+Modified behavior: end-to-end manual rerun
+Run ID:
+  5db60d8f-c7de-491e-8e7d-c20f30a7a43d
+Literal result:
+  status=completed
+  title=ChatGPT 正从聊天框变成工作台
+  image=5db60d8f-c7de-491e-8e7d-c20f30a7a43d.png
+  wechat_status=wechat_draft
+  wechat_media_id=ZHxeX3ewRo-_vXr2gv0J0QwB388WZHH08Oiu4C0qp9ZjWY7nhMTMzlDq8fvBA3Fx
+Exit/result status: completed
+
+Patch replay verification
+Command:
+  git apply --check artifacts/codex-search-order-fix.patch && git apply artifacts/codex-search-order-fix.patch
+Literal output:
+  codex_fix_patch_check=ok patch_apply=ok file_hashes_match=2
+Exit status: 0

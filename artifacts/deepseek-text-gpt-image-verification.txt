@@ -1,0 +1,75 @@
+Objective
+Add DeepSeek API as the text provider while keeping ChatGPT/Codex as the image provider.
+
+Changed fields and branches
+- AI_PROVIDER=deepseek selects DeepSeek for editorial decisions and article writing.
+- IMAGE_PROVIDER=codex keeps research support and PNG generation on the ChatGPT membership login.
+- DEEPSEEK_API_KEY, DEEPSEEK_BASE_URL, DEEPSEEK_MODEL, and DEEPSEEK_MAX_TOKENS configure the official OpenAI-compatible DeepSeek endpoint.
+- Default DeepSeek model: deepseek-v4-flash.
+
+Original preservation
+Command:
+  shasum -a 256 artifacts/deepseek-text-gpt-image-original/src/ai.js artifacts/deepseek-text-gpt-image-original/src/server.js artifacts/deepseek-text-gpt-image-original/src/pipeline.js
+Literal output:
+  37c0ac3ccd0366b03749a9c618a2e113736d52e1b822e92b0709ac100a9924c6  artifacts/deepseek-text-gpt-image-original/src/ai.js
+  81ca0b356830152a1873b5e66f011dc1f5180f0bfbe9b9b61101445ff25232ed  artifacts/deepseek-text-gpt-image-original/src/server.js
+  0030d24eba3d011708582b8b6ffa2621e18d442922386d6148e1f3bdcc321525  artifacts/deepseek-text-gpt-image-original/src/pipeline.js
+Exit status: 0
+
+Automated verification
+Command:
+  npm test
+Literal output summary:
+  tests 13
+  pass 13
+  fail 0
+Exit status: 0
+
+DeepSeek HTTP contract verification
+Input:
+  apiKey=test-token, baseURL=http://127.0.0.1:EPHEMERAL_PORT, model=deepseek-v4-flash
+Baseline command behavior:
+  No DeepSeek provider branch existed.
+Modified command behavior:
+  runDeepSeekStructured() called the mock OpenAI-compatible endpoint.
+Literal output:
+  {"ok":true,"route":"/chat/completions","model":"deepseek-v4-flash","responseFormat":{"type":"json_object"},"thinking":{"type":"disabled"}}
+Exit status: 0
+
+ChatGPT image-provider verification
+Command:
+  generateCover(..., { aiProvider: "deepseek", imageProvider: "codex", codexModel: "gpt-5.4" })
+Literal output:
+  /Users/qcc/moli-wechat-agent/data/generated/deepseek-gpt-image-smoke.png
+Validation command:
+  file /Users/qcc/moli-wechat-agent/data/generated/deepseek-gpt-image-smoke.png
+Literal output:
+  PNG image data, 1693 x 929, 8-bit/color RGB, non-interlaced
+SHA-256:
+  3cde3266ac5ac01452129b6fc06cdd6822d2fcaf85221444e026ff9d1d866ed2
+Exit status: 0
+
+Health verification with current Codex mode retained until a DeepSeek key is supplied
+Command:
+  curl -fsS http://127.0.0.1:3210/api/health
+Literal output:
+  {"ok":true,"integrations":{"ai":true,"openai":false,"deepseek":false,"aiProvider":"codex","imageProvider":"codex","chatgpt":true,"wechat":true,"textModel":"gpt-5.4","imageModel":"ChatGPT imagegen"},"activeRunId":null}
+Exit status: 0
+
+Patch replay verification
+Command:
+  git apply --check artifacts/deepseek-text-gpt-image.patch && git apply artifacts/deepseek-text-gpt-image.patch
+Literal output:
+  deepseek_patch_check=ok patch_apply=ok file_hashes_match=10
+Exit status: 0
+
+Activation slots
+  AI_PROVIDER=deepseek
+  IMAGE_PROVIDER=codex
+  DEEPSEEK_API_KEY=DEEPSEEK_API_KEY
+  DEEPSEEK_MODEL=deepseek-v4-flash
+
+Post-activation live verification
+  DeepSeek API response: {"ok":true,"provider":"deepseek"}
+  Full run a03797f1-a657-400b-886e-9ee152aa9eb3: completed
+  Result: DeepSeek text + ChatGPT PNG + WeChat draft

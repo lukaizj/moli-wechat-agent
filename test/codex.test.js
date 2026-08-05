@@ -1,0 +1,51 @@
+import test from "node:test";
+import assert from "node:assert/strict";
+import { isAiReady } from "../src/ai.js";
+import { buildCodexArgs, codexChildEnv } from "../src/codex.js";
+
+test("Codex provider uses ChatGPT login without inheriting an API key", () => {
+  const env = codexChildEnv({ OPENAI_API_KEY: "secret", KEEP_ME: "yes" });
+  assert.equal(env.OPENAI_API_KEY, undefined);
+  assert.equal(env.KEEP_ME, "yes");
+});
+
+test("Codex command is ephemeral, schema-bound, and read-only by default", () => {
+  const args = buildCodexArgs({
+    model: "gpt-5.4",
+    effort: "low",
+    schemaPath: "/tmp/schema.json",
+    resultPath: "/tmp/result.json",
+    search: true,
+    prompt: "test",
+  });
+  assert.deepEqual(args.slice(0, 5), ["--search", "exec", "--ephemeral", "--skip-git-repo-check", "--sandbox"]);
+  assert.ok(args.indexOf("--search") < args.indexOf("exec"));
+  assert.ok(args.includes("read-only"));
+  assert.ok(args.includes("--search"));
+  assert.ok(args.includes("--output-schema"));
+  assert.ok(args.includes("gpt-5.4"));
+});
+
+test("AI readiness follows the selected provider", () => {
+  assert.equal(isAiReady({ aiProvider: "codex", codexLoggedIn: true }), true);
+  assert.equal(isAiReady({ aiProvider: "codex", codexLoggedIn: false }), false);
+  assert.equal(isAiReady({ aiProvider: "openai", openaiApiKey: "key" }), true);
+  assert.equal(
+    isAiReady({
+      aiProvider: "deepseek",
+      deepseekApiKey: "key",
+      imageProvider: "codex",
+      codexLoggedIn: true,
+    }),
+    true,
+  );
+  assert.equal(
+    isAiReady({
+      aiProvider: "deepseek",
+      deepseekApiKey: "key",
+      imageProvider: "codex",
+      codexLoggedIn: false,
+    }),
+    false,
+  );
+});

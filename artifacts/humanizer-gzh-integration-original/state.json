@@ -1,0 +1,345 @@
+{
+  "settings": {
+    "accountName": "未命名刊物",
+    "theme": "AI 工具与个体效率",
+    "audience": "想把 AI 真正用进工作流的职场人和独立创作者",
+    "tone": "有判断、讲人话、少套话；用真实场景解释复杂概念",
+    "author": "主理人",
+    "targetLength": 1800,
+    "imageStyle": "克制的编辑插画，清晰构图，具有杂志封面的视觉张力，不出现文字与水印",
+    "scheduleEnabled": false,
+    "scheduleTime": "08:30",
+    "timezone": "Asia/Shanghai",
+    "allowComments": false,
+    "fansOnlyComments": false
+  },
+  "articles": [
+    {
+      "id": "53b10478-8858-49e8-bc94-42ec33cdd6a3",
+      "runId": "a03797f1-a657-400b-886e-9ee152aa9eb3",
+      "status": "wechat_draft",
+      "title": "别把 AI 当外挂：Docs 把图示写进正文",
+      "digest": "Gemini 直接进入 Google Docs 正文工作流，写方案时即可生成并修改图示。这改变了文档的产出方式，但也需看清适用边界。本文给出场景判断与可复制提示词。",
+      "topic": {
+        "title": "别再把 AI 当写作外挂：Google Docs 开始把“生成图示”并进文档主流程",
+        "angle": "过去 7 天里，最值得关注的不是又一个独立 AI 工具，而是 Gemini 直接进入 Google Docs 的正文工作流：写方案的人可以一边写、一边生成/修改信息图、流程图和配图，减少在 Docs、设计工具、截图标注之间反复跳转。这更像“文档即成品”的拐点，特别适合写周报、方案、培训材料和客户交付物的职场人。",
+        "whyNow": "Google Workspace Updates 在 2026 年 7 月 28 日宣布，Gemini 可在 Google Docs 中直接生成和编辑图片、图表与信息图；同一时期的 Google Workspace 帮助文档也把这类能力列入 Gemini Beta/相关能力范围，说明这不是概念演示，而是在进入可用阶段。对“AI 工具与个体效率”栏目来说，这是真正影响日常工作流的变化。",
+        "readerPromise": "这篇选题可以帮读者判断：哪些文档场景值得把“写字+出图”合并到一个流程里，哪些场景仍然不该依赖 AI 自动配图；并给出 3-5 个可直接复制的办公提示词场景。",
+        "keywords": [
+          "Google Docs",
+          "Gemini",
+          "AI 工作流",
+          "信息图",
+          "流程图",
+          "知识工作",
+          "办公效率"
+        ],
+        "researchSummary": "已核查到的近 7 天内高相关变化，最强的一条是 Google 于 2026 年 7 月 28 日发布的官方更新：Gemini 现在可在 Google Docs 中直接基于文档上下文生成和编辑图片、图表、信息图，而且支持用自然语言批量调整已有视觉内容。这意味着 AI 在办公场景里的位置，正从“写完再去别处配图”变成“写作过程中顺手完成表达设计”。这对目标读者很重要，因为多数人卡住的不是‘不会让 AI 写’，而是‘写完后还要手动整理成能发给老板/客户的版本’。可写成的核心判断是：AI 办公的下一阶段，不是更长的文本生成，而是把说明、结构化表达、视觉解释一起塞回原来的文档流。文章里可用真实场景展开，比如：1）把一份冗长方案自动转成顶部信息图；2）把 SOP 文字转成 4 步流程图；3）把培训文档每一节补一张解释图，降低读者理解门槛。需要提醒读者的是，官方信息显示该能力与 Gemini/Workspace 计划、语言和端侧条件有关，选题里要写清‘适用范围仍有限’，避免夸大成‘所有 Docs 用户已全面可用’。",
+        "sources": [
+          {
+            "title": "Generate and edit visuals with Gemini in Google Docs",
+            "publisher": "Google Workspace Updates",
+            "url": "https://workspaceupdates.googleblog.com/"
+          },
+          {
+            "title": "Generate an image with Gemini in Google Docs (Workspace Experiments)",
+            "publisher": "Google Docs Editors Help",
+            "url": "https://support.google.com/docs/answer/15559808?hl=en"
+          },
+          {
+            "title": "Turn access to Google Workspace with Gemini Beta on or off",
+            "publisher": "Google Workspace Help",
+            "url": "https://knowledge.workspace.google.com/admin/generative-ai/workspace-with-gemini/turn-access-to-google-workspace-with-gemini-beta-on-or-off?co=DASHER._Family%3DBusiness-Enterprise&rd=1&visit_id=639177279873059013-1058108131"
+          }
+        ]
+      },
+      "html": "<div style=\"max-width:100%;font-family:-apple-system,BlinkMacSystemFont,'PingFang SC','Microsoft YaHei',sans-serif\">\n    <p style=\"margin:0 0 .5em;color:#747b8d;font-size:13px;letter-spacing:.08em\">AI 工具与个体效率</p>\n    <p style=\"margin:0 0 1.4em;font-size:18px;line-height:1.75;color:#3b4050;font-weight:500\">过去一周，最值得关注的不是又一个独立 AI 工具，而是 Gemini 直接进入 Google Docs 的正文工作流：写方案的人可以一边写、一边生成或修改信息图、流程图和配图，减少在文档、设计工具、截图标注之间的反复跳转。这更像“文档即成品”的拐点，尤其适合写周报、方案、培训材料和客户交付物的职场人。</p>\n    <img src=\"http://mmbiz.qpic.cn/mmbiz_png/zO3RVuZnibkYIGESAaWv7L8clqumsqP9ymRauFUpKHUxXicwTjwEA1PKeNAVE2QicwscIvLroiahHIJYxibCKOC31Erp2Qza9ticjaMQnqePIgNeY/0?from=appmsg\" alt=\"别把 AI 当外挂：Docs 把图示写进正文\" style=\"display:block;width:100%;height:auto;margin:1.6em 0 2.2em;border-radius:4px\" />\n    <section style=\"margin:2.2em 0\">\n        <h2 style=\"margin:0 0 1em;font-size:21px;line-height:1.45;color:#11182a;font-weight:700\">从“写完再配图”到“边写边出图”</h2>\n        <p style=\"margin:0 0 1.2em;font-size:16px;line-height:1.9;color:#252936\">你有没有过这样的经历：花两小时写完一份方案，觉得内容没问题，但一看版式，全是文字，显得单薄。于是你打开设计工具，截图、标注、找模板，再嵌入文档。来回折腾下来，半小时又没了。这种‘内容好，但表达不够’的尴尬，几乎是每个职场人的日常。</p>\n<p style=\"margin:0 0 1.2em;font-size:16px;line-height:1.9;color:#252936\">2026 年 7 月 28 日，Google Workspace Updates 宣布，Gemini 现在可以在 Google Docs 中直接基于文档上下文生成和编辑图片、图表、信息图。你不是写完后去别处配图，而是在写作过程中，顺手用自然语言让 AI 把某一段文字变成一张可视化图。这改变了文档的产出方式。</p>\n        <blockquote style=\"margin:1.8em 0;padding:18px 20px;border-left:4px solid #ff5a49;background:#f4f6fb;color:#343949;font-size:16px;line-height:1.8\">AI 办公的下一阶段，不是更长的文本生成，而是把说明、结构化表达、视觉解释一起塞回原来的文档流。</blockquote>\n      </section>\n<section style=\"margin:2.2em 0\">\n        <h2 style=\"margin:0 0 1em;font-size:21px;line-height:1.45;color:#11182a;font-weight:700\">真实场景：哪些文档值得把写字和出图合并</h2>\n        <p style=\"margin:0 0 1.2em;font-size:16px;line-height:1.9;color:#252936\">场景一：把冗长方案自动转成顶部信息图。你写了一份 20 页的年度计划，关键信息散落各处。与其让老板翻到最后，不如直接对 Gemini 说：‘把第三部分的核心目标、时间节点和预期结果做成一张横向信息图，放在文档开头。’它生成的图，能快速帮读者建立全局。</p>\n<p style=\"margin:0 0 1.2em;font-size:16px;line-height:1.9;color:#252936\">场景二：把 SOP 文字转成四步流程图。SOP 通常是长段落，新人很难读进去。你可以选中某段，要求 Gemini 改写为精简的四步，并生成流程图。这样操作步骤一目了然，培训成本也会降低。</p>\n<p style=\"margin:0 0 1.2em;font-size:16px;line-height:1.9;color:#252936\">场景三：为培训文档每一节补一张解释图。你准备一份内部培训材料，涉及概念较多。让 AI 为每一节生成一张示意图，比如‘用流程图说明数据流转路径’，读者理解起来会轻松很多。</p>\n        <blockquote style=\"margin:1.8em 0;padding:18px 20px;border-left:4px solid #ff5a49;background:#f4f6fb;color:#343949;font-size:16px;line-height:1.8\">真正适合合并流程的，是那些需要清晰结构、读者需要快速理解的文档。</blockquote>\n      </section>\n<section style=\"margin:2.2em 0\">\n        <h2 style=\"margin:0 0 1em;font-size:21px;line-height:1.45;color:#11182a;font-weight:700\">哪些场景仍然不该依赖 AI 自动配图</h2>\n        <p style=\"margin:0 0 1.2em;font-size:16px;line-height:1.9;color:#252936\">首先是对外正式提案或合同等文件。这类文件强调精确性和严肃性，AI 生成的图可能存在视觉风格偏差或错误，需要人工反复校验，反而增加负担。其次是品牌视觉要求极高的资料。如果你有严格的 VI 规范，AI 生成的图很难完全契合品牌标准，不如用专业工具定制。第三是数据非常敏感的场景。图表可能包含未公开数据，AI 处理时需谨慎。</p>\n<p style=\"margin:0 0 1.2em;font-size:16px;line-height:1.9;color:#252936\">另外，并非所有用户都能用上该功能。官方信息显示，能力与 Gemini/Workspace 计划、语言和端侧条件有关。也就是说，它还在 Beta 或逐步开放的阶段，别默认所有 Docs 用户都能即刻使用。</p>\n        <blockquote style=\"margin:1.8em 0;padding:18px 20px;border-left:4px solid #ff5a49;background:#f4f6fb;color:#343949;font-size:16px;line-height:1.8\">适用范围仍有限，别夸大——它不替代设计工具，而是在特定文档场景中减少来回跳转。</blockquote>\n      </section>\n<section style=\"margin:2.2em 0\">\n        <h2 style=\"margin:0 0 1em;font-size:21px;line-height:1.45;color:#11182a;font-weight:700\">三条可直接复制的办公提示词</h2>\n        <p style=\"margin:0 0 1.2em;font-size:16px;line-height:1.9;color:#252936\">提示词一：给方案加顶部图。‘把文档第 2 部分的核心目标、时间节点和预期结果，生成一张横向信息图，放在文档开头。’</p>\n<p style=\"margin:0 0 1.2em;font-size:16px;line-height:1.9;color:#252936\">提示词二：把段落变成流程图。‘将选中的这段文字，改写为四个步骤，并生成清晰简洁的流程图，按顺序排列。’</p>\n<p style=\"margin:0 0 1.2em;font-size:16px;line-height:1.9;color:#252936\">提示词三：为培训文档配图。‘为这一节内容生成一张解释性示意图，用于帮助新人理解，风格简洁，不用文字标注。’</p>\n        <blockquote style=\"margin:1.8em 0;padding:18px 20px;border-left:4px solid #ff5a49;background:#f4f6fb;color:#343949;font-size:16px;line-height:1.8\">提示词的关键是明确‘目标对象、视觉类型、放置位置’，并给出约束条件（如风格、字数）。</blockquote>\n      </section>\n    <section style=\"margin:2.5em 0 1em;padding:22px;background:#11182a;color:#fff\">\n      <p style=\"margin:0;font-size:17px;line-height:1.85\">AI 在办公场景里的位置，正从‘写完再去别处配图’变成‘写作过程中顺手完成表达设计’。这对职场人来说是真正的效率提升，但前提是分清场景：需要结构化表达和快速理解的，适合合并流程；追求精确或品牌要求的，仍交给专业工具。记住，AI 是个好助手，但别把它当万能外挂。</p>\n    </section>\n    <section style=\"margin-top:2.6em;padding-top:1.3em;border-top:1px solid #dfe3ec;color:#7a8091;font-size:12px;line-height:1.7\"><strong>资料来源</strong><ol style=\"padding-left:1.5em\"><li style=\"margin:.5em 0\">[1] Generate and edit visuals with Gemini in Google Docs · Google Workspace Updates</li><li style=\"margin:.5em 0\">[2] Generate an image with Gemini in Google Docs (Workspace Experiments) · Google Docs Editors Help</li><li style=\"margin:.5em 0\">[3] Turn access to Google Workspace with Gemini Beta on or off · Google Workspace Help</li></ol></section>\n  </div>",
+      "plainTextLength": 1688,
+      "coverUrl": "/generated/a03797f1-a657-400b-886e-9ee152aa9eb3.png",
+      "coverPath": "/Users/qcc/moli-wechat-agent/data/generated/a03797f1-a657-400b-886e-9ee152aa9eb3.png",
+      "wechatMediaId": "ZHxeX3ewRo-_vXr2gv0J0RaEc6o_UXEu_YYxQlntbLkLp7lfofUKSAfYbpVkpRao",
+      "createdAt": "2026-08-04T08:52:10.660Z"
+    },
+    {
+      "id": "6777a2e8-a4e6-4e99-bbc4-779c782f07c6",
+      "runId": "d908ea5c-8c12-41c2-b6be-a94add783677",
+      "status": "wechat_draft",
+      "title": "先接资料库，再谈 AI 自动化",
+      "digest": "过去一周更重要的变化，不是又出了什么新模型，而是 ChatGPT 正在补齐接入真实工作资料的基础设施。",
+      "topic": {
+        "title": "别再把 AI 当聊天框：现在最值得写的是“把 ChatGPT 接进你的资料库，先做检索层，再谈自动化”",
+        "angle": "过去 7 天里，最值得关注的不是又多了一个“更强模型”，而是 ChatGPT 的“Apps with sync / Apps”文档在 2026 年 8 月 3-4 日持续更新，配合 2026 年 7 月 15 日 Enterprise/Edu 对 EKM 工作区开放 sync，说明 AI 工具的竞争点正在从“会不会写”转向“能不能带着你的真实上下文工作”。对职场人和独立创作者，这意味着下一步不是学更多提示词，而是先把常用知识源接进 AI，减少找资料、翻聊天、对版本。",
+        "whyNow": "因为这个变化已经从概念进入可用阶段：OpenAI 帮助中心关于 Apps in ChatGPT 于 2026 年 8 月 4 日前后仍在更新，Apps with sync 文档也在 10 小时前更新；与此同时，ChatGPT Enterprise/Edu 发布说明确认 2026 年 7 月 15 日起，启用 EKM 的工作区也可用 sync。连起来看，过去一周真正相关的信号是：AI 工作流的基础设施正在补齐，‘让 AI 先知道你有什么资料’这件事，已经比追新模型更值得读者马上动手。",
+        "readerPromise": "读完就能判断自己是否该把 AI 接入邮件、文档、聊天与云盘，并拿走一套低风险的落地顺序：先接检索型数据源，再设计固定问法，最后再升级到可执行动作，避免一上来就做复杂 agent。",
+        "keywords": [
+          "ChatGPT Apps",
+          "apps with sync",
+          "工作流",
+          "知识检索",
+          "上下文工程",
+          "个体效率"
+        ],
+        "researchSummary": "我只保留了一个选题，因为最近 7 天里真正和“AI 工具与个体效率”强相关、且能给读者立刻带来收益的，不是泛泛的模型新闻，而是“AI 开始稳定接入你的真实工作资料”。可核查的依据有三层：1）OpenAI《Apps in ChatGPT》帮助文档在最近 8 小时更新，明确 Apps 的作用是把外部工具和数据带进 ChatGPT，用于搜索、引用、执行动作与预同步知识；2）OpenAI《ChatGPT apps with sync》文档在最近 10 小时更新，补充了 sync 的工作方式、升级机制、权限边界与适用场景，显示这已不是演示功能，而是可运营的工作流能力；3）OpenAI Enterprise/Edu 发布说明写明，自 2026 年 7 月 15 日起，启用 EKM 的工作区也支持 apps with sync，说明这套能力正在补齐企业级治理条件。我的判断是：这背后最适合写给读者的，不是‘某家又发了什么’，而是‘为什么你该把 AI 的第一站，从提示词技巧，换成个人/团队知识检索层’。这对职场人和独立创作者的明确收益是：减少信息搜寻时间、降低重复解释成本、让 AI 输出更贴近真实项目，而不是继续停留在空上下文的聊天。",
+        "sources": [
+          {
+            "title": "Apps in ChatGPT",
+            "publisher": "OpenAI Help Center",
+            "url": "https://help.openai.com/en/articles/11487775-apps-in-chatgpt"
+          },
+          {
+            "title": "ChatGPT apps with sync",
+            "publisher": "OpenAI Help Center",
+            "url": "https://help.openai.com/en/articles/10847137"
+          },
+          {
+            "title": "ChatGPT Enterprise 与 Edu - 发布说明",
+            "publisher": "OpenAI Help Center",
+            "url": "https://help.openai.com/zh-hans-cn/articles/10128477-chatgpt-enterprise-edu-release-notes"
+          }
+        ]
+      },
+      "html": "<div style=\"max-width:100%;font-family:-apple-system,BlinkMacSystemFont,'PingFang SC','Microsoft YaHei',sans-serif\">\n    <p style=\"margin:0 0 .5em;color:#747b8d;font-size:13px;letter-spacing:.08em\">AI 工具与个体效率</p>\n    <p style=\"margin:0 0 1.4em;font-size:18px;line-height:1.75;color:#3b4050;font-weight:500\">如果你最近还在盯着“哪个模型更强”，很可能已经看偏了。至少在过去一周里，真正值得职场人和独立创作者留意的，不是写作能力又被刷新，而是 ChatGPT 正在把“知道你的资料”这件事，做成一层越来越稳的基础设施。8 月 4 日前后，OpenAI 帮助中心的《Apps in ChatGPT》仍在更新；《ChatGPT apps with sync》显示 10 小时前更新；而 Enterprise/Edu 的发布说明又明确写着，2026 年 7 月 15 日起，启用 EKM 的工作区也支持 apps with sync。把这几个信号连起来看，意思很清楚：AI 工具的竞争点，正在从“会不会写”转向“能不能带着你的真实上下文工作”。</p>\n    <img src=\"http://mmbiz.qpic.cn/mmbiz_png/zO3RVuZnibkZsOgtEMb2MB4ET33XcQp4nXG6VE1WeuFEP2thVkGlMMLXUgalpV5AAyMCO9lBSUeDtllv9FfjE9RB9W2icoLkLTSsu07g5aQw8/0?from=appmsg\" alt=\"先接资料库，再谈 AI 自动化\" style=\"display:block;width:100%;height:auto;margin:1.6em 0 2.2em;border-radius:4px\" />\n    <section style=\"margin:2.2em 0\">\n        <h2 style=\"margin:0 0 1em;font-size:21px;line-height:1.45;color:#11182a;font-weight:700\">很多人卡住，不是不会提问，而是 AI 根本不知道你手里有什么</h2>\n        <p style=\"margin:0 0 1.2em;font-size:16px;line-height:1.9;color:#252936\">这件事放到真实工作里特别明显。你让 AI 写周报，它能写；但你真正要的，往往不是一篇空白周报，而是“根据这周邮件、会议纪要、项目文档和飞书聊天，把进展、风险和待决事项整理出来”。这时候，问题从来不是提示词够不够花，而是 AI 有没有碰到你的真实材料。</p>\n<p style=\"margin:0 0 1.2em;font-size:16px;line-height:1.9;color:#252936\">同样的场景也发生在独立创作者身上。不是不会让 AI 写选题，而是选题散在 Notion、云盘、邮箱、微信收藏和旧文档里；不是不会让 AI 改稿，而是它不知道你过去三个月写过什么、哪几个角度已经写烂、哪个版本才是最新。聊天框里的 AI 再聪明，只要上下文是空的，输出就还是飘的。</p>\n<p style=\"margin:0 0 1.2em;font-size:16px;line-height:1.9;color:#252936\">所以我越来越认同一个判断：下一步最值得写、也最值得做的，不是继续卷提示词技巧，而是先给 AI 接一层检索能力，让它先知道你的资料在哪、哪些是最新的、哪些是你有权限看的。</p>\n        <blockquote style=\"margin:1.8em 0;padding:18px 20px;border-left:4px solid #ff5a49;background:#f4f6fb;color:#343949;font-size:16px;line-height:1.8\">先把 AI 从“会聊天”变成“找得到你的资料”。</blockquote>\n      </section>\n<section style=\"margin:2.2em 0\">\n        <h2 style=\"margin:0 0 1em;font-size:21px;line-height:1.45;color:#11182a;font-weight:700\">为什么说这比“又来了一个新模型”更值得关注</h2>\n        <p style=\"margin:0 0 1.2em;font-size:16px;line-height:1.9;color:#252936\">因为这已经不是一句产品口号，而是在文档和发布节奏上连续落地。OpenAI 帮助中心《Apps in ChatGPT》页面在 2026 年 8 月 4 日前后仍在更新，页面把 Apps 定义得很直接：连接外部工具、信息和动作，让 ChatGPT 可以搜索、引用、执行动作，或者提前同步内容。</p>\n<p style=\"margin:0 0 1.2em;font-size:16px;line-height:1.9;color:#252936\">另一篇《ChatGPT apps with sync》在 2026 年 8 月 4 日显示 10 小时前更新。这里最关键的不是“能连应用”这句话，而是它把 sync 讲得更像一个可运营能力：先做一次初始同步，把文件和权限索引起来；之后再持续刷新；还能在部分应用里从“只做同步检索”升级到“在保留同步的同时增加动作能力”。这说明它不只是一个演示开关，而是一层工作流基础设施。</p>\n<p style=\"margin:0 0 1.2em;font-size:16px;line-height:1.9;color:#252936\">再往前看，OpenAI《ChatGPT Enterprise &amp; Edu - Release Notes》在 2026 年 7 月 15 日明确写到：启用 Enterprise Key Management 的 Enterprise/Edu 工作区，也支持 apps with sync。这个信号很重要，因为它说明这套能力开始补齐企业治理条件，不再只适合轻量试用。</p>\n<p style=\"margin:0 0 1.2em;font-size:16px;line-height:1.9;color:#252936\">换句话说，过去七天真正相关的新闻不是“模型又更强了一点”，而是“AI 开始更稳定地接入你真实在用的知识环境”。对多数人来说，后者的收益比前者大得多。</p>\n        <blockquote style=\"margin:1.8em 0;padding:18px 20px;border-left:4px solid #ff5a49;background:#f4f6fb;color:#343949;font-size:16px;line-height:1.8\">当文档开始反复更新“同步、权限、升级、治理”，你看到的就不是功能点，而是基础设施。</blockquote>\n      </section>\n<section style=\"margin:2.2em 0\">\n        <h2 style=\"margin:0 0 1em;font-size:21px;line-height:1.45;color:#11182a;font-weight:700\">这会改变普通人的工作流，但改变的顺序不能搞反</h2>\n        <p style=\"margin:0 0 1.2em;font-size:16px;line-height:1.9;color:#252936\">很多团队一上来就想做 agent：自动读邮件、自动分任务、自动回客户、自动写日报。想法听起来很先进，实际常常死在第一步，因为资料没接好、权限没理清、版本没统一，最后变成一个会乱动的助手。</p>\n<p style=\"margin:0 0 1.2em;font-size:16px;line-height:1.9;color:#252936\">更稳的顺序正好相反。先让 AI 变成一个高质量检索层，再谈自动化。理由很现实：检索错了，后面的总结、判断、执行都会错；检索稳了，哪怕先不让它做动作，光是减少找资料、翻聊天、对版本、补背景这几件事，效率就已经能明显提升。</p>\n<p style=\"margin:0 0 1.2em;font-size:16px;line-height:1.9;color:#252936\">你可以把它理解成给 AI 装“工作记忆”，但这份记忆不是模型自己猜出来的，而是从你的邮件、文档、聊天记录、云盘和项目资料里，被权限约束着拿过来的真实上下文。AI 真正有用，往往不是更会说，而是更少让你重复解释。</p>\n        <blockquote style=\"margin:1.8em 0;padding:18px 20px;border-left:4px solid #ff5a49;background:#f4f6fb;color:#343949;font-size:16px;line-height:1.8\">别先追求“自动做事”，先追求“少重复交代背景”。</blockquote>\n      </section>\n<section style=\"margin:2.2em 0\">\n        <h2 style=\"margin:0 0 1em;font-size:21px;line-height:1.45;color:#11182a;font-weight:700\">对职场人和独立创作者，最实用的落地顺序只有三步</h2>\n        <p style=\"margin:0 0 1.2em;font-size:16px;line-height:1.9;color:#252936\">第一步，先接检索型数据源，不急着开动作。优先级建议是：文档库、云盘、知识库、邮件，其次再到聊天工具。原因很简单，前几类资料相对稳定、可追溯、风险更低，也更适合验证 AI 能不能真的帮你找到内容。聊天数据价值很高，但噪音也高，适合放在第二阶段。</p>\n<p style=\"margin:0 0 1.2em;font-size:16px;line-height:1.9;color:#252936\">第二步，为常用场景设计固定问法，而不是每次即兴发挥。比如项目管理可以固定成三句：‘总结本周与项目 A 相关的最新进展’、‘列出其中出现的风险和待决事项’、‘只引用最近两周的资料，按来源标注’。创作者也一样：‘基于过去 30 天的选题库和草稿，找出三条还没写透的方向，并说明不要重复我已发布的文章角度。’固定问法的价值，是把“会不会问”变成可复用流程。</p>\n<p style=\"margin:0 0 1.2em;font-size:16px;line-height:1.9;color:#252936\">第三步，等检索稳定后，再升级到动作型能力。比如让 AI 帮你起草回复、生成汇报提纲、整理会议跟进事项，最后才是发消息、改记录、推任务。顺序越往后，权限越该收紧，确认步骤越该明确。这样做不是保守，而是避免一开始就把系统做复杂。</p>\n        <blockquote style=\"margin:1.8em 0;padding:18px 20px;border-left:4px solid #ff5a49;background:#f4f6fb;color:#343949;font-size:16px;line-height:1.8\">最小可行路径：先搜得到，再问得稳，最后才让它动手。</blockquote>\n      </section>\n<section style=\"margin:2.2em 0\">\n        <h2 style=\"margin:0 0 1em;font-size:21px;line-height:1.45;color:#11182a;font-weight:700\">你该不该现在就接入，判断标准其实不复杂</h2>\n        <p style=\"margin:0 0 1.2em;font-size:16px;line-height:1.9;color:#252936\">如果你的工作经常出现这四种情况，就值得现在开始：第一，总在多个地方找同一份资料；第二，经常要把同一段背景重复讲给同事、客户或 AI；第三，文件版本很多，最新版本难确认；第四，你做的不是纯创意发散，而是依赖已有资料做总结、判断、推进。</p>\n<p style=\"margin:0 0 1.2em;font-size:16px;line-height:1.9;color:#252936\">反过来，如果你的工作主要是一次性灵感输出，或者你手头资料本来就很少、很短、很集中，那暂时不接也没关系。不是所有人都要立刻把所有系统打通。重要的是别把“接入资料库”理解成大工程。对个人来说，先接一两个最常用的数据源，已经足够让 AI 从聊天玩具变成工作助手。</p>\n<p style=\"margin:0 0 1.2em;font-size:16px;line-height:1.9;color:#252936\">真正该避免的，是另一种误区：把所有东西一股脑接进去，却没有想清楚你最常问什么。资料接得越多，不等于效果越好。你要先定义问题，再决定接什么源。</p>\n        <blockquote style=\"margin:1.8em 0;padding:18px 20px;border-left:4px solid #ff5a49;background:#f4f6fb;color:#343949;font-size:16px;line-height:1.8\">接入不是越多越好，而是越贴近日常问题越好。</blockquote>\n      </section>\n<section style=\"margin:2.2em 0\">\n        <h2 style=\"margin:0 0 1em;font-size:21px;line-height:1.45;color:#11182a;font-weight:700\">现在最值得写给读者的，不是模型榜单，而是这层新入口</h2>\n        <p style=\"margin:0 0 1.2em;font-size:16px;line-height:1.9;color:#252936\">我会把这件事概括成一句话：未来一段时间，AI 工具最有含金量的升级，不是聊天框里再多一个更会写的模型，而是它终于开始稳定知道“你有哪些资料、哪些能看、哪些是最新的”。</p>\n<p style=\"margin:0 0 1.2em;font-size:16px;line-height:1.9;color:#252936\">这也是为什么我觉得，现在最值得写的题目，不是“最新模型怎么选”，而是“把 ChatGPT 接进你的资料库，先做检索层，再谈自动化”。因为这不是概念教育，而是已经进入可用阶段的工作方法。谁先把这层搭起来，谁就更早摆脱来回翻资料、重复交代背景和版本混乱。</p>\n<p style=\"margin:0 0 1.2em;font-size:16px;line-height:1.9;color:#252936\">如果你想今天就开始，最简单的动作不是研究十篇提示词教程，而是拿出你最常用的一个知识源，接进去，然后用三个固定问题连测一周。你很快就会知道，这是不是你工作流里真正值得投入的下一步。</p>\n<p style=\"margin:0 0 1.2em;font-size:16px;line-height:1.9;color:#252936\">参考信息：OpenAI Help Center《Apps in ChatGPT》（2026 年 8 月 4 日前后仍在更新）；《ChatGPT apps with sync》（页面显示 10 小时前更新）；《ChatGPT Enterprise &amp; Edu - Release Notes》2026 年 7 月 15 日条目：Apps with sync now support EKM workspaces。</p>\n        <blockquote style=\"margin:1.8em 0;padding:18px 20px;border-left:4px solid #ff5a49;background:#f4f6fb;color:#343949;font-size:16px;line-height:1.8\">先让 AI 知道你的资料，再让它替你做事。</blockquote>\n      </section>\n    <section style=\"margin:2.5em 0 1em;padding:22px;background:#11182a;color:#fff\">\n      <p style=\"margin:0;font-size:17px;line-height:1.85\">过去七天最值得关注的，不是模型竞赛，而是上下文基础设施成熟了一步。对多数职场人和独立创作者来说，真正该马上动手的，不是学更多提示词，而是先把常用知识源接进 AI：先检索，后动作；先低风险，后自动化。</p>\n    </section>\n    <section style=\"margin-top:2.6em;padding-top:1.3em;border-top:1px solid #dfe3ec;color:#7a8091;font-size:12px;line-height:1.7\"><strong>资料来源</strong><ol style=\"padding-left:1.5em\"><li style=\"margin:.5em 0\">[1] Apps in ChatGPT · OpenAI Help Center</li><li style=\"margin:.5em 0\">[2] ChatGPT apps with sync · OpenAI Help Center</li><li style=\"margin:.5em 0\">[3] ChatGPT Enterprise 与 Edu - 发布说明 · OpenAI Help Center</li></ol></section>\n  </div>",
+      "plainTextLength": 3167,
+      "coverUrl": "/generated/d908ea5c-8c12-41c2-b6be-a94add783677.png",
+      "coverPath": "/Users/qcc/moli-wechat-agent/data/generated/d908ea5c-8c12-41c2-b6be-a94add783677.png",
+      "wechatMediaId": "ZHxeX3ewRo-_vXr2gv0J0bw3nCtzdaBCfAYk5C81n1QlsAXKJYWhNjYW-ykJvRzO",
+      "createdAt": "2026-08-04T08:47:10.264Z"
+    },
+    {
+      "id": "4eeb42db-ca3a-4d2a-bbf3-3a3db487d82f",
+      "runId": "5db60d8f-c7de-491e-8e7d-c20f30a7a43d",
+      "status": "wechat_draft",
+      "title": "ChatGPT 正从聊天框变成工作台",
+      "digest": "比模型更值得关注的，是 Work 与 Scheduled Tasks 正把查找、整理、跟进和产出连成可持续工作流。",
+      "topic": {
+        "title": "写“ChatGPT 从聊天框变成工作台”：为什么现在最值得关注的是 Work + Scheduled Tasks 的组合",
+        "angle": "不是再讲‘AI 更聪明了’，而是讲一个更实际的变化：ChatGPT 这周围绕 Work 和 Scheduled Tasks 的更新，正在把 AI 从一次性问答工具推向可持续运行的工作流入口。对职场人和独立创作者，价值不在模型参数，而在‘能不能把查找、整理、跟进、产出’串起来。",
+        "whyNow": "因为这是最近 7 天内少数同时满足三点的变化：一是有官方可核查更新；二是直接作用于工作流，而不只是单次生成；三是普通用户能马上理解收益。OpenAI 帮助中心在 2026-08-03/04 更新了 Work、Scheduled Tasks 等说明：Work 已被明确为处理多步骤任务与交付物的模式，可在 Web、移动端和桌面端使用；Scheduled Tasks 也新增独立页面、改进创建/编辑流程、更灵活的日程和更好的通知。这说明产品重心正在从‘陪你聊’转向‘替你持续推进工作’。",
+        "readerPromise": "读完能明白一件事：以后把 AI 用进工作流，重点不是多会写提示词，而是先挑出哪些任务适合交给 Work 持续跑；你也会获得一套可直接迁移到自己工作中的任务分类框架。",
+        "keywords": [
+          "ChatGPT Work",
+          "Scheduled Tasks",
+          "AI 工作流",
+          "个体效率",
+          "自动化跟进",
+          "多步骤任务",
+          "知识工作"
+        ],
+        "researchSummary": "可核查的最近变化主要来自 OpenAI 官方帮助文档。其一，OpenAI 在《ChatGPT Work and Codex》中把 Chat、Work、Codex 明确区分：Work 用于 research、analysis，以及生成 document、spreadsheet、presentation、report、Site，并说明 Work 聊天可在 Web、移动端、桌面端同步，桌面端还可在许可下访问本地文件与桌面应用。其二，《Scheduled Tasks in ChatGPT》在 2026-08-04 更新，明确提到 Scheduled Tasks 正在获得独立页面、改进的创建和编辑流程、更灵活的日程选项，以及更好的通知，并支持一次性任务、重复任务，以及“检查变化后提醒”。其三，《Creating and editing documents, spreadsheets, and presentations with ChatGPT Work》补充了 Work 的产出边界：它已能创建或编辑文档、表格、演示文稿、报告和分析，还支持在相关 Google Workspace 应用启用时处理原生 Docs/Sheets/Slides。综合这些官方信息，可以判断这不是单点功能修补，而是 ChatGPT 正在强化“任务执行层”：从对话入口，延伸到定时运行、跨端继续、文件产出和持续跟进。对栏目定位而言，这比单纯的新模型发布更值得写，因为它直接回答读者最关心的问题：AI 怎样真正接进日常工作流，而不是只在灵感来时用一下。",
+        "sources": [
+          {
+            "title": "ChatGPT Work and Codex",
+            "publisher": "OpenAI Help Center",
+            "url": "https://help.openai.com/en/articles/20001275-chatgpt-work-and-codex"
+          },
+          {
+            "title": "Scheduled Tasks in ChatGPT",
+            "publisher": "OpenAI Help Center",
+            "url": "https://help.openai.com/en/articles/10291617-tasks-in-chatgpt"
+          },
+          {
+            "title": "Creating and editing documents, spreadsheets, and presentations with ChatGPT Work",
+            "publisher": "OpenAI Help Center",
+            "url": "https://help.openai.com/en/articles/20001278-creating-and-editing-documents-spreadsheets-and-presentations-with-chatgpt-work"
+          },
+          {
+            "title": "ChatGPT 现已成为你攻坚克难的得力伙伴",
+            "publisher": "OpenAI",
+            "url": "https://openai.com/zh-Hans-CN/index/chatgpt-for-your-most-ambitious-work/"
+          }
+        ]
+      },
+      "html": "<div style=\"max-width:100%;font-family:-apple-system,BlinkMacSystemFont,'PingFang SC','Microsoft YaHei',sans-serif\">\n    <p style=\"margin:0 0 .5em;color:#747b8d;font-size:13px;letter-spacing:.08em\">AI 工具与个体效率</p>\n    <p style=\"margin:0 0 1.4em;font-size:18px;line-height:1.75;color:#3b4050;font-weight:500\">这两天如果只盯着模型能力，很容易错过更关键的一步。真正值得关注的，不是 ChatGPT 又会了多少新本事，而是它开始更明确地接管“工作怎么被持续推进”。截至 2026 年 8 月 4 日，OpenAI 帮助中心连续更新了 Work 与 Scheduled Tasks 相关说明：Work 被定义为适合处理多步骤任务和成品交付的模式，可在 Web、移动端和桌面端衔接；Scheduled Tasks 则新增独立页面，改进创建与编辑流程，提供更灵活的日程和更好的通知。放在一起看，这不是小修小补，而是在把 ChatGPT 从一次性问答工具，推向一个能持续运行的工作流入口。</p>\n    <img src=\"http://mmbiz.qpic.cn/mmbiz_png/zO3RVuZnibkZhDZxYQ9L52W1LH65QT39QHiaoHicg7HeWWsT8ibKaAicKXBbsne7XNV9vQsM1icEYIBTGQ83DOufjK3N6xxMs2VHswDsACeDZa6jo/0?from=appmsg\" alt=\"ChatGPT 正从聊天框变成工作台\" style=\"display:block;width:100%;height:auto;margin:1.6em 0 2.2em;border-radius:4px\" />\n    <section style=\"margin:2.2em 0\">\n        <h2 style=\"margin:0 0 1em;font-size:21px;line-height:1.45;color:#11182a;font-weight:700\">过去大家讨论 AI，常常只问一个问题：它聪不聪明；但对真正想把 AI 用进工作的人，更关键的问题其实是：它能不能接住一个任务，然后把任务往前推。</h2>\n        <p style=\"margin:0 0 1.2em;font-size:16px;line-height:1.9;color:#252936\">聊天框时代的 ChatGPT，更像一个随叫随到的顾问。你问，它答；你停，它也停。它很适合灵感启发、快速解释、临时改稿，却很难自然承担那些要跨时间、跨步骤、跨产出的工作。问题不在模型不够强，而在产品形态还停留在“一次对话完成一次请求”。</p>\n<p style=\"margin:0 0 1.2em;font-size:16px;line-height:1.9;color:#252936\">Work 和 Scheduled Tasks 的组合，改变的正是这一点。OpenAI 在 2026 年 8 月 3 日前后更新的《ChatGPT Work and Codex》里，已经把 Chat、Work、Codex 分得很清楚：Chat 负责快问快答，Work 负责 research、analysis，以及 document、spreadsheet、presentation、report、Site 这类交付物。也就是说，Work 不是让你“聊得更高级”，而是让你把一个任务交给它持续推进。</p>\n        <blockquote style=\"margin:1.8em 0;padding:18px 20px;border-left:4px solid #ff5a49;background:#f4f6fb;color:#343949;font-size:16px;line-height:1.8\">这次变化的重点，不是回答更漂亮，而是任务终于有了承接层。</blockquote>\n      </section>\n<section style=\"margin:2.2em 0\">\n        <h2 style=\"margin:0 0 1em;font-size:21px;line-height:1.45;color:#11182a;font-weight:700\">如果再把 Scheduled Tasks 补上，ChatGPT 就不只是能做事，还开始具备“按时做、反复做、变化了再提醒你”的能力。</h2>\n        <p style=\"margin:0 0 1.2em;font-size:16px;line-height:1.9;color:#252936\">根据 2026 年 8 月 4 日更新的《Scheduled Tasks in ChatGPT》，它现在强调的是四件事：独立的 Scheduled 页面、更顺手的创建和编辑流程、更灵活的日程安排、更好的通知。用户可以设一次性任务，也可以设重复任务，还可以让它“检查变化后提醒”。</p>\n<p style=\"margin:0 0 1.2em;font-size:16px;line-height:1.9;color:#252936\">这听起来像细节，落到工作里却是分水岭。因为大量真实工作，并不是一锤子买卖，而是反复发生的：每天看行业动态、每周整理销售线索、每月更新内容选题、持续跟进一个项目节点。以前你可以让 AI 帮你写，但很难让它替你盯；现在，至少从产品路径上，OpenAI 已经明确在补这块。</p>\n        <blockquote style=\"margin:1.8em 0;padding:18px 20px;border-left:4px solid #ff5a49;background:#f4f6fb;color:#343949;font-size:16px;line-height:1.8\">一旦 AI 能盯进度，价值就从“帮我想”变成“帮我推进”。</blockquote>\n      </section>\n<section style=\"margin:2.2em 0\">\n        <h2 style=\"margin:0 0 1em;font-size:21px;line-height:1.45;color:#11182a;font-weight:700\">这也是为什么我觉得，这周最值得写的不是“AI 更强了”，而是“AI 更像工作台了”。</h2>\n        <p style=\"margin:0 0 1.2em;font-size:16px;line-height:1.9;color:#252936\">所谓工作台，不是界面上多了几个按钮，而是你开始能把一串动作接起来：先查找，再整理；先分析，再产出；先生成，再跟进。OpenAI 另一篇在最近更新的《Creating and editing documents, spreadsheets, and presentations with ChatGPT Work》也给了很明确的边界：Work 已经能创建或编辑文档、表格、演示文稿、报告和分析；在相关 Google Workspace 应用启用时，还能处理原生 Docs、Sheets、Slides。</p>\n<p style=\"margin:0 0 1.2em;font-size:16px;line-height:1.9;color:#252936\">这意味着什么？意味着它不只是帮你“写一段”，而是在越来越靠近真实办公里的交付物。你最后拿到的，不只是聊天记录，而可能是一份周报、一张表、一套演示稿、一份结构完整的分析。对普通用户来说，这比参数升级更容易理解，也更容易立刻看到收益。</p>\n        <blockquote style=\"margin:1.8em 0;padding:18px 20px;border-left:4px solid #ff5a49;background:#f4f6fb;color:#343949;font-size:16px;line-height:1.8\">工作流的入口，从“提一个问题”变成“交一件事”。</blockquote>\n      </section>\n<section style=\"margin:2.2em 0\">\n        <h2 style=\"margin:0 0 1em;font-size:21px;line-height:1.45;color:#11182a;font-weight:700\">对职场人和独立创作者，最该学的因此不是更花哨的提示词，而是先判断：哪些任务适合交给 Work 持续跑。</h2>\n        <p style=\"margin:0 0 1.2em;font-size:16px;line-height:1.9;color:#252936\">我建议用一个很实用的四类框架来筛。第一类，重复但耗神的任务，适合优先交出去，比如行业信息巡检、例行周报初稿、固定格式的数据整理。第二类，需要跨步骤推进的任务，也适合，比如先收集资料、再提炼重点、最后生成文档。第三类，需要持续关注变化的任务，尤其适合 Scheduled Tasks，比如竞品价格变动、活动报名进展、选题相关新动态。第四类，必须高度拍板的任务，暂时别整包交出去，比如最终商务判断、敏感对外表述、关键财务决策。</p>\n<p style=\"margin:0 0 1.2em;font-size:16px;line-height:1.9;color:#252936\">判断标准其实很简单：这个任务是不是有清晰目标、可描述步骤、可接受中间确认、最终要落成某种交付物；如果答案大多是“是”，它就越来越适合 Work。反过来，如果任务高度依赖临场博弈、隐性信息和最后拍板，那 AI 目前更适合作为辅助，而不是主流程。</p>\n        <blockquote style=\"margin:1.8em 0;padding:18px 20px;border-left:4px solid #ff5a49;background:#f4f6fb;color:#343949;font-size:16px;line-height:1.8\">先分任务，再谈提示词，效率会高很多。</blockquote>\n      </section>\n<section style=\"margin:2.2em 0\">\n        <h2 style=\"margin:0 0 1em;font-size:21px;line-height:1.45;color:#11182a;font-weight:700\">拿几个具体场景来说，你会更容易理解这组功能为什么实用。</h2>\n        <p style=\"margin:0 0 1.2em;font-size:16px;line-height:1.9;color:#252936\">一个做市场的人，可以把“每周追踪三个竞品的产品更新、官网定价和新发布内容，整理成一页简报”交给 Work，再用 Scheduled Tasks 设成每周一早上执行。这样你每周面对的不是空白页，而是一份可改可发的初稿。</p>\n<p style=\"margin:0 0 1.2em;font-size:16px;line-height:1.9;color:#252936\">一个独立创作者，可以让 Work 持续维护选题池：固定检查几个信息源，筛出值得写的线索，按“热点、常青、可变现”分类，再每周提醒一次哪些题目最值得开写。你要做的，不再是从零搜素材，而是从已经被整理过的候选里做判断。</p>\n<p style=\"margin:0 0 1.2em;font-size:16px;line-height:1.9;color:#252936\">一个项目负责人，则可以把例会后的跟进工作拆开：会后整理纪要、列出待办、标注责任人、生成下次同步前的检查点，并通过 Scheduled Tasks 在节点前提醒。它不替代管理，但会明显减少那些把人拖累的琐碎协调。</p>\n        <blockquote style=\"margin:1.8em 0;padding:18px 20px;border-left:4px solid #ff5a49;background:#f4f6fb;color:#343949;font-size:16px;line-height:1.8\">真正省下来的，往往不是写字时间，而是反复启动任务的心力。</blockquote>\n      </section>\n<section style=\"margin:2.2em 0\">\n        <h2 style=\"margin:0 0 1em;font-size:21px;line-height:1.45;color:#11182a;font-weight:700\">如果你想现在就把它用进自己的工作，我建议从一条最短路径开始，而不是一上来就设计宏大系统。</h2>\n        <p style=\"margin:0 0 1.2em;font-size:16px;line-height:1.9;color:#252936\">先挑一个每周都会发生、结果格式相对固定、你又确实觉得烦的任务。把它写成一句完整要求：目标是什么，输入来自哪里，输出长什么样，哪些标准不能变。先在 Work 里跑通一次，确认它能不能把查找、整理和产出接起来。</p>\n<p style=\"margin:0 0 1.2em;font-size:16px;line-height:1.9;color:#252936\">跑通后，再问第二个问题：这件事是不是会重复发生，或者需要对外部变化保持关注；如果是，再交给 Scheduled Tasks。这样做的好处是，你不是先研究功能，而是先找到一个能立刻替你省事的入口。</p>\n<p style=\"margin:0 0 1.2em;font-size:16px;line-height:1.9;color:#252936\">未来一段时间，围绕 AI 的竞争当然还会继续谈模型、速度和价格，但对大多数人来说，真正决定使用深度的，越来越不是它单次回答有多惊艳，而是它能不能稳定地接进你的日常工作。Work 负责把任务做成，Scheduled Tasks 负责把任务持续下去。这两个能力一旦开始咬合，聊天框就不再只是聊天框，它会慢慢长成你的工作台。</p>\n        <blockquote style=\"margin:1.8em 0;padding:18px 20px;border-left:4px solid #ff5a49;background:#f4f6fb;color:#343949;font-size:16px;line-height:1.8\">先让 AI 接住一个重复任务，比学十条提示词都更接近真实效率。</blockquote>\n      </section>\n    <section style=\"margin:2.5em 0 1em;padding:22px;background:#11182a;color:#fff\">\n      <p style=\"margin:0;font-size:17px;line-height:1.85\">所以，这次最值得关注的不是“ChatGPT 更像人了”，而是“ChatGPT 更像一个能持续运转的工作入口了”。对职场人和独立创作者来说，下一步不是追最新参数，而是盘点自己手里的任务：哪些值得交给 Work，哪些应该交给 Scheduled Tasks 持续跑。谁先完成这一步，谁就更早把 AI 从偶尔用一下，变成稳定的生产系统。</p>\n    </section>\n    <section style=\"margin-top:2.6em;padding-top:1.3em;border-top:1px solid #dfe3ec;color:#7a8091;font-size:12px;line-height:1.7\"><strong>资料来源</strong><ol style=\"padding-left:1.5em\"><li style=\"margin:.5em 0\">[1] ChatGPT Work and Codex · OpenAI Help Center</li><li style=\"margin:.5em 0\">[2] Scheduled Tasks in ChatGPT · OpenAI Help Center</li><li style=\"margin:.5em 0\">[3] Creating and editing documents, spreadsheets, and presentations with ChatGPT Work · OpenAI Help Center</li><li style=\"margin:.5em 0\">[4] ChatGPT 现已成为你攻坚克难的得力伙伴 · OpenAI</li></ol></section>\n  </div>",
+      "plainTextLength": 3021,
+      "coverUrl": "/generated/5db60d8f-c7de-491e-8e7d-c20f30a7a43d.png",
+      "coverPath": "/Users/qcc/moli-wechat-agent/data/generated/5db60d8f-c7de-491e-8e7d-c20f30a7a43d.png",
+      "wechatMediaId": "ZHxeX3ewRo-_vXr2gv0J0QwB388WZHH08Oiu4C0qp9ZjWY7nhMTMzlDq8fvBA3Fx",
+      "createdAt": "2026-08-04T08:36:40.209Z"
+    }
+  ],
+  "runs": [
+    {
+      "id": "a03797f1-a657-400b-886e-9ee152aa9eb3",
+      "trigger": "deepseek-activation-smoke",
+      "status": "completed",
+      "mode": "deepseek",
+      "createdAt": "2026-08-04T08:48:46.857Z",
+      "completedAt": "2026-08-04T08:52:10.660Z",
+      "articleId": "53b10478-8858-49e8-bc94-42ec33cdd6a3",
+      "error": null,
+      "steps": [
+        {
+          "key": "research",
+          "label": "联网研究与选题",
+          "status": "done",
+          "detail": "别再把 AI 当写作外挂：Google Docs 开始把“生成图示”并进文档主流程"
+        },
+        {
+          "key": "writing",
+          "label": "撰写与结构化排版",
+          "status": "done",
+          "detail": "别把 AI 当外挂：Docs 把图示写进正文"
+        },
+        {
+          "key": "image",
+          "label": "生成封面与正文配图",
+          "status": "done",
+          "detail": "a03797f1-a657-400b-886e-9ee152aa9eb3.png"
+        },
+        {
+          "key": "wechat",
+          "label": "写入公众号草稿箱",
+          "status": "done",
+          "detail": "草稿 media_id：ZHxeX3ewRo-_vXr2gv0J0RaEc6o_UXEu_YYxQlntbLkLp7lfofUKSAfYbpVkpRao"
+        }
+      ]
+    },
+    {
+      "id": "d908ea5c-8c12-41c2-b6be-a94add783677",
+      "trigger": "manual",
+      "status": "completed",
+      "mode": "codex",
+      "createdAt": "2026-08-04T08:43:12.435Z",
+      "completedAt": "2026-08-04T08:47:10.264Z",
+      "articleId": "6777a2e8-a4e6-4e99-bbc4-779c782f07c6",
+      "error": null,
+      "steps": [
+        {
+          "key": "research",
+          "label": "联网研究与选题",
+          "status": "done",
+          "detail": "别再把 AI 当聊天框：现在最值得写的是“把 ChatGPT 接进你的资料库，先做检索层，再谈自动化”"
+        },
+        {
+          "key": "writing",
+          "label": "撰写与结构化排版",
+          "status": "done",
+          "detail": "先接资料库，再谈 AI 自动化"
+        },
+        {
+          "key": "image",
+          "label": "生成封面与正文配图",
+          "status": "done",
+          "detail": "d908ea5c-8c12-41c2-b6be-a94add783677.png"
+        },
+        {
+          "key": "wechat",
+          "label": "写入公众号草稿箱",
+          "status": "done",
+          "detail": "草稿 media_id：ZHxeX3ewRo-_vXr2gv0J0bw3nCtzdaBCfAYk5C81n1QlsAXKJYWhNjYW-ykJvRzO"
+        }
+      ]
+    },
+    {
+      "id": "5db60d8f-c7de-491e-8e7d-c20f30a7a43d",
+      "trigger": "manual-retry-after-codex-cli-fix",
+      "status": "completed",
+      "mode": "codex",
+      "createdAt": "2026-08-04T08:33:25.175Z",
+      "completedAt": "2026-08-04T08:36:40.209Z",
+      "articleId": "4eeb42db-ca3a-4d2a-bbf3-3a3db487d82f",
+      "error": null,
+      "steps": [
+        {
+          "key": "research",
+          "label": "联网研究与选题",
+          "status": "done",
+          "detail": "写“ChatGPT 从聊天框变成工作台”：为什么现在最值得关注的是 Work + Scheduled Tasks 的组合"
+        },
+        {
+          "key": "writing",
+          "label": "撰写与结构化排版",
+          "status": "done",
+          "detail": "ChatGPT 正从聊天框变成工作台"
+        },
+        {
+          "key": "image",
+          "label": "生成封面与正文配图",
+          "status": "done",
+          "detail": "5db60d8f-c7de-491e-8e7d-c20f30a7a43d.png"
+        },
+        {
+          "key": "wechat",
+          "label": "写入公众号草稿箱",
+          "status": "done",
+          "detail": "草稿 media_id：ZHxeX3ewRo-_vXr2gv0J0QwB388WZHH08Oiu4C0qp9ZjWY7nhMTMzlDq8fvBA3Fx"
+        }
+      ]
+    },
+    {
+      "id": "344e81c2-9665-4c50-ade2-91a9446258dc",
+      "trigger": "manual-retry-after-codex-cli-fix",
+      "status": "failed",
+      "mode": "codex",
+      "createdAt": "2026-08-04T08:32:34.712Z",
+      "completedAt": "2026-08-04T08:32:34.959Z",
+      "articleId": null,
+      "error": "ChatGPT 会员内容引擎运行失败：Usage: codex exec [OPTIONS] [PROMPT] ·        codex exec [OPTIONS] <COMMAND> [ARGS] ·  · For more information, try '--help'.",
+      "steps": [
+        {
+          "key": "research",
+          "label": "联网研究与选题",
+          "status": "failed",
+          "detail": "ChatGPT 会员内容引擎运行失败：Usage: codex exec [OPTIONS] [PROMPT] ·        codex exec [OPTIONS] <COMMAND> [ARGS] ·  · For more information, try '--help'."
+        },
+        {
+          "key": "writing",
+          "label": "撰写与结构化排版",
+          "status": "queued",
+          "detail": ""
+        },
+        {
+          "key": "image",
+          "label": "生成封面与正文配图",
+          "status": "queued",
+          "detail": ""
+        },
+        {
+          "key": "wechat",
+          "label": "写入公众号草稿箱",
+          "status": "queued",
+          "detail": ""
+        }
+      ]
+    },
+    {
+      "id": "7f53df6e-bec7-4f43-b676-3b5e9072190d",
+      "trigger": "manual",
+      "status": "failed",
+      "mode": "codex",
+      "createdAt": "2026-08-04T08:28:08.234Z",
+      "completedAt": "2026-08-04T08:28:08.450Z",
+      "articleId": null,
+      "error": "ChatGPT 会员内容引擎运行失败：Usage: codex exec [OPTIONS] [PROMPT] ·        codex exec [OPTIONS] <COMMAND> [ARGS] ·  · For more information, try '--help'.",
+      "steps": [
+        {
+          "key": "research",
+          "label": "联网研究与选题",
+          "status": "failed",
+          "detail": "ChatGPT 会员内容引擎运行失败：Usage: codex exec [OPTIONS] [PROMPT] ·        codex exec [OPTIONS] <COMMAND> [ARGS] ·  · For more information, try '--help'."
+        },
+        {
+          "key": "writing",
+          "label": "撰写与结构化排版",
+          "status": "queued",
+          "detail": ""
+        },
+        {
+          "key": "image",
+          "label": "生成封面与正文配图",
+          "status": "queued",
+          "detail": ""
+        },
+        {
+          "key": "wechat",
+          "label": "写入公众号草稿箱",
+          "status": "queued",
+          "detail": ""
+        }
+      ]
+    }
+  ],
+  "scheduler": {
+    "lastRunDate": null
+  }
+}

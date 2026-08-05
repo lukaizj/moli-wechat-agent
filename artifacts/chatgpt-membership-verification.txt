@@ -1,0 +1,60 @@
+ChatGPT membership provider verification
+Date: 2026-08-04 Asia/Shanghai
+Project: /Users/qcc/moli-wechat-agent
+
+BASELINE
+Command:
+  POST https://api.openai.com/v1/responses using OPENAI_API_KEY and gpt-5.6-terra
+Literal output:
+  {"ok":false,"status":429,"error":{"type":"insufficient_quota","code":"insufficient_quota","message":"You exceeded your current quota, please check your plan and billing details. For more information on this error, read the docs: https://platform.openai.com/docs/guides/error-codes/api-errors."}}
+Exit status: 1
+
+CHATGPT LOGIN
+Command:
+  codex login status
+Literal output:
+  Logged in using ChatGPT
+Exit status: 0
+
+MODIFIED TEXT BEHAVIOR
+Command:
+  runCodexStructured() with AI_PROVIDER=codex, CODEX_MODEL=gpt-5.4, OPENAI_API_KEY removed from the child environment
+Literal output:
+  {"loggedIn":true,"result":{"ok":"ChatGPT会员通道正常"},"openaiApiKeyInherited":false}
+Exit status: 0
+
+MODIFIED IMAGE BEHAVIOR
+Command:
+  runCodexImage() using ChatGPT login and the built-in imagegen tool
+Literal output:
+  {"ok":true,"output":"/Users/qcc/moli-wechat-agent/data/generated/codex-provider-smoke.png"}
+  PNG image data, 1693 x 929, 8-bit/color RGB, non-interlaced
+Exit status: 0
+
+PROJECT HEALTH
+Command:
+  node src/server.js; curl -fsS http://127.0.0.1:3210/api/health
+Literal output:
+  {"ok":true,"integrations":{"ai":true,"openai":false,"aiProvider":"codex","chatgpt":true,"wechat":true,"textModel":"gpt-5.4","imageModel":"ChatGPT imagegen"},"activeRunId":null}
+  TCP 127.0.0.1:3210 (LISTEN)
+Exit status: 0
+
+PATCH REPLAY
+Command:
+  git apply --check artifacts/chatgpt-membership-provider.patch; git apply artifacts/chatgpt-membership-provider.patch in a clean preserved-original copy
+Literal output:
+  patch_check=ok patch_apply=ok file_hashes_match=10
+Exit status: 0
+
+TESTS
+Command:
+  npm test
+Literal result:
+  tests 10; pass 10; fail 0; cancelled 0; skipped 0; todo 0
+Exit status: 0
+
+Credential boundary:
+  OPENAI_API_KEY is empty in the active .env.
+  The Codex child process does not inherit OPENAI_API_KEY.
+  The service binds to 127.0.0.1 by default.
+  No ChatGPT browser cookies or session tokens are read by this project.

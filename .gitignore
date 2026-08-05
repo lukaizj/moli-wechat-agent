@@ -1,0 +1,13 @@
+node_modules/
+.env
+.env.*
+.env.before-*
+logs/
+*.log
+data/state.json
+data/*.tmp
+data/generated/*
+!data/generated/.gitkeep
+.DS_Store
+
+

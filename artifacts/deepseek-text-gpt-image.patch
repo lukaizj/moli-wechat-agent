@@ -1,0 +1,339 @@
+diff --git a/.env.example b/.env.example
+index e67ec1e..9f51ec0 100644
+--- a/.env.example
++++ b/.env.example
+@@ -4,6 +4,14 @@ CODEX_PATH=codex
+ CODEX_MODEL=gpt-5.4
+ CODEX_TIMEOUT_MS=600000
+ 
++# 文案使用 DeepSeek、配图使用 ChatGPT 时改为：
++# AI_PROVIDER=deepseek
++# IMAGE_PROVIDER=codex
++DEEPSEEK_API_KEY=
++DEEPSEEK_BASE_URL=https://api.deepseek.com
++DEEPSEEK_MODEL=deepseek-v4-flash
++DEEPSEEK_MAX_TOKENS=8192
++
+ # 备选：改为 AI_PROVIDER=openai 后使用 API
+ OPENAI_API_KEY=
+ OPENAI_TEXT_MODEL=gpt-5.6-terra
+diff --git a/README.md b/README.md
+index 8efbd7e..ec2c2c7 100644
+--- a/README.md
++++ b/README.md
+@@ -60,6 +60,23 @@ WECHAT_APP_SECRET=...
+ 
+ 然后重启服务。前端只显示接入状态，不读取或保存密钥。
+ 
++### DeepSeek 文案 + ChatGPT 配图
++
++DeepSeek 使用兼容 OpenAI Chat Completions 的官方接口；联网研究与配图继续走本机 ChatGPT 会员登录，文章成稿由 DeepSeek 生成：
++
++```dotenv
++AI_PROVIDER=deepseek
++IMAGE_PROVIDER=codex
++DEEPSEEK_API_KEY=sk-...
++DEEPSEEK_BASE_URL=https://api.deepseek.com
++DEEPSEEK_MODEL=deepseek-v4-flash
++
++CODEX_PATH=codex
++CODEX_MODEL=gpt-5.4
++```
++
++保存后重启服务。DeepSeek API 密钥只在服务器进程读取，不会返回前端。
++
+ ### 微信侧准备
+ 
+ - 在公众平台「设置与开发 → 基本配置」获取 AppID 与 AppSecret；
+diff --git a/public/app.js b/public/app.js
+index 413e5c5..6e36555 100644
+--- a/public/app.js
++++ b/public/app.js
+@@ -61,13 +61,18 @@ function goTo(view) {
+ }
+ 
+ function renderIntegrations() {
+-  const { openai, ai = openai, aiProvider, wechat } = state.integrations;
+-  const aiName = aiProvider === "codex" ? "ChatGPT 会员" : "OpenAI API";
++  const { openai, ai = openai, aiProvider, imageProvider, wechat } = state.integrations;
++  const aiName =
++    aiProvider === "codex"
++      ? "ChatGPT 会员"
++      : aiProvider === "deepseek"
++        ? `DeepSeek 文案 · ${imageProvider === "codex" ? "ChatGPT 配图" : "OpenAI 配图"}`
++        : "OpenAI API";
+   $("#openai-dot").classList.toggle("ready", ai);
+   $("#wechat-dot").classList.toggle("ready", wechat);
+-  $("#openai-label").textContent = ai ? `${aiName}已接入` : `${aiName}待登录`;
++  $("#openai-label").textContent = ai ? `${aiName}已接入` : `${aiName}待配置`;
+   $("#wechat-label").textContent = wechat ? "已接入" : "待配置";
+-  $("#settings-openai").textContent = `${ai ? "●" : "○"} 内容引擎 · ${aiName}${ai ? "已接入" : "待登录"}`;
++  $("#settings-openai").textContent = `${ai ? "●" : "○"} 内容引擎 · ${aiName}${ai ? "已接入" : "待配置"}`;
+   $("#settings-wechat").textContent = `${wechat ? "●" : "○"} 微信公众号${wechat ? "已接入" : "待配置"}`;
+   $("#settings-openai").classList.toggle("ready", ai);
+   $("#settings-wechat").classList.toggle("ready", wechat);
+diff --git a/public/index.html b/public/index.html
+index b7023a1..c3becb2 100644
+--- a/public/index.html
++++ b/public/index.html
+@@ -160,7 +160,7 @@
+             <section class="settings-intro">
+               <span class="section-label">PUBLICATION DNA</span>
+               <h2>把公众号的判断，<br />写进 Agent 的日常。</h2>
+-              <p>主题决定写什么，读者与语气决定怎么写。内容引擎可使用本机 ChatGPT 会员登录，公众号密钥仍只放在服务器的 <code>.env</code>。</p>
++              <p>主题决定写什么，读者与语气决定怎么写。文案可选 DeepSeek API 或本机 ChatGPT 会员，配图可继续使用 ChatGPT；所有密钥只放在服务器的 <code>.env</code>。</p>
+               <div class="setup-status">
+                 <strong>接入状态</strong>
+                 <div><span id="settings-openai">○ 内容引擎</span><span id="settings-wechat">○ 微信公众号</span></div>
+diff --git a/src/ai.js b/src/ai.js
+index 80f0101..b43419d 100644
+--- a/src/ai.js
++++ b/src/ai.js
+@@ -3,6 +3,7 @@ import OpenAI from "openai";
+ import { z } from "zod";
+ import { zodTextFormat } from "openai/helpers/zod";
+ import { runCodexImage, runCodexStructured } from "./codex.js";
++import { runDeepSeekStructured } from "./deepseek.js";
+ 
+ const TopicDecision = z.object({
+   title: z.string(),
+@@ -105,6 +106,21 @@ export async function chooseTopic(settings, config) {
+     });
+     return TopicDecision.parse(value);
+   }
++  if (config.aiProvider === "deepseek") {
++    const research = await runCodexStructured({
++      config,
++      effort: "low",
++      search: true,
++      schema: topicDecisionSchema,
++      prompt: `你是微信公众号研究编辑。联网检索最近 7 天与栏目定位真正相关的变化，整理一个有可核查来源的候选选题，不编造数据。\n\n公众号主题：${settings.theme}\n目标读者：${settings.audience}\n写作气质：${settings.tone}\n\n只返回符合 schema 的 JSON。`,
++    });
++    const value = await runDeepSeekStructured({
++      config,
++      schema: topicDecisionSchema,
++      prompt: `根据下面的联网研究结果，确定今天唯一值得写、能给读者明确收益的选题。来源标题、发布方和 URL 必须原样保留，不新增未经核查的事实。\n\n公众号主题：${settings.theme}\n目标读者：${settings.audience}\n写作气质：${settings.tone}\n联网研究：${JSON.stringify(research)}`,
++    });
++    return TopicDecision.parse(value);
++  }
+   const client = clientFor(config.openaiApiKey);
+   const response = await client.responses.parse({
+     model: config.textModel,
+@@ -136,6 +152,14 @@ export async function writeArticle(topic, settings, config) {
+     });
+     return ArticleDraft.parse(value);
+   }
++  if (config.aiProvider === "deepseek") {
++    const value = await runDeepSeekStructured({
++      config,
++      schema: articleDraftSchema,
++      prompt: `你是成熟的中文专栏作者。文章要有明确论点、具体场景、可执行的方法和自然节奏；不用套话，不堆砌小标题，不虚构采访、案例或数据。标题不超过 28 个汉字，摘要不超过 90 个汉字。\n\n选题：${topic.title}\n切入角度：${topic.angle}\n为什么现在写：${topic.whyNow}\n读者收获：${topic.readerPromise}\n研究摘要：${topic.researchSummary}\n栏目主题：${settings.theme}\n读者：${settings.audience}\n语气：${settings.tone}\n目标长度：约 ${settings.targetLength} 字\n图片风格：${settings.imageStyle}\n\n完成可直接进入微信公众号编辑器的文章结构，并给出一条不含文字、Logo、水印的封面图视觉提示。`,
++    });
++    return ArticleDraft.parse(value);
++  }
+   const client = clientFor(config.openaiApiKey);
+   const response = await client.responses.parse({
+     model: config.textModel,
+@@ -157,7 +181,9 @@ export async function writeArticle(topic, settings, config) {
+ }
+ 
+ export async function generateCover(prompt, outputPath, config) {
+-  if (config.aiProvider === "codex") return runCodexImage(prompt, outputPath, config);
++  if (config.imageProvider === "codex" || config.aiProvider === "codex") {
++    return runCodexImage(prompt, outputPath, config);
++  }
+   const client = clientFor(config.openaiApiKey);
+   const result = await client.images.generate({
+     model: config.imageModel,
+@@ -173,8 +199,15 @@ export async function generateCover(prompt, outputPath, config) {
+ }
+ 
+ export function isAiReady(config) {
+-  if (config.aiProvider === "codex") return Boolean(config.codexLoggedIn);
+-  return Boolean(config.openaiApiKey);
++  const textReady =
++    (config.aiProvider === "codex" && config.codexLoggedIn) ||
++    (config.aiProvider === "deepseek" && config.deepseekApiKey) ||
++    (config.aiProvider === "openai" && config.openaiApiKey);
++  const imageReady =
++    (config.imageProvider === "codex" && config.codexLoggedIn) ||
++    (config.imageProvider === "openai" && config.openaiApiKey) ||
++    (!config.imageProvider && textReady);
++  return Boolean(textReady && imageReady);
+ }
+ 
+ export function demoTopic(settings) {
+diff --git a/src/deepseek.js b/src/deepseek.js
+new file mode 100644
+index 0000000..55dff37
+--- /dev/null
++++ b/src/deepseek.js
+@@ -0,0 +1,43 @@
++import OpenAI from "openai";
++
++export function deepSeekClientOptions(config) {
++  return {
++    apiKey: config.deepseekApiKey,
++    baseURL: config.deepseekBaseUrl || "https://api.deepseek.com",
++  };
++}
++
++export function deepSeekRequestBody({ prompt, schema, config }) {
++  return {
++    model: config.deepseekModel || "deepseek-v4-flash",
++    messages: [
++      {
++        role: "system",
++        content: "你是严谨的中文内容编辑。只输出一个符合 JSON Schema 的 JSON 对象，不使用 Markdown 代码块。",
++      },
++      {
++        role: "user",
++        content: `${prompt}\n\nJSON Schema：\n${JSON.stringify(schema)}`,
++      },
++    ],
++    response_format: { type: "json_object" },
++    thinking: { type: "disabled" },
++    max_tokens: config.deepseekMaxTokens || 8192,
++  };
++}
++
++export function parseDeepSeekJson(content) {
++  if (!content?.trim()) throw new Error("DeepSeek 返回了空内容");
++  return JSON.parse(content.trim().replace(/^```(?:json)?\s*/i, "").replace(/\s*```$/, ""));
++}
++
++export async function runDeepSeekStructured({ prompt, schema, config }) {
++  const client = new OpenAI(deepSeekClientOptions(config));
++  try {
++    const response = await client.chat.completions.create(deepSeekRequestBody({ prompt, schema, config }));
++    return parseDeepSeekJson(response.choices[0]?.message?.content);
++  } catch (error) {
++    const detail = error?.error?.message || error?.message || String(error);
++    throw new Error(`DeepSeek 内容引擎运行失败：${detail}`);
++  }
++}
+diff --git a/src/pipeline.js b/src/pipeline.js
+index 219824c..3aabb90 100644
+--- a/src/pipeline.js
++++ b/src/pipeline.js
+@@ -101,7 +101,7 @@ export class Pipeline {
+       const draft = aiReady ? await writeArticle(topic, settings, this.config) : demoArticle(topic, settings);
+       await this.updateStep(runId, "writing", "done", draft.title);
+ 
+-      const imageEngine = this.config.aiProvider === "codex" ? "ChatGPT 会员配图" : this.config.imageModel;
++      const imageEngine = this.config.imageProvider === "codex" ? "ChatGPT 会员配图" : this.config.imageModel;
+       await this.updateStep(runId, "image", "running", aiReady ? imageEngine : "生成演示封面");
+       const extension = aiReady ? "png" : "svg";
+       const coverFile = `${runId}.${extension}`;
+diff --git a/src/server.js b/src/server.js
+index c388d52..fcdc0ea 100644
+--- a/src/server.js
++++ b/src/server.js
+@@ -17,6 +17,7 @@ const config = {
+   host: process.env.HOST || "127.0.0.1",
+   baseUrl: process.env.APP_BASE_URL || "http://localhost:3210",
+   aiProvider: process.env.AI_PROVIDER || "openai",
++  imageProvider: process.env.IMAGE_PROVIDER || (process.env.AI_PROVIDER === "deepseek" ? "codex" : process.env.AI_PROVIDER || "openai"),
+   openaiApiKey: process.env.OPENAI_API_KEY || "",
+   textModel: process.env.OPENAI_TEXT_MODEL || "gpt-5.6-terra",
+   imageModel: process.env.OPENAI_IMAGE_MODEL || "gpt-image-2",
+@@ -24,10 +25,16 @@ const config = {
+   codexModel: process.env.CODEX_MODEL || "gpt-5.4",
+   codexTimeoutMs: Number(process.env.CODEX_TIMEOUT_MS || 600_000),
+   codexLoggedIn: false,
++  deepseekApiKey: process.env.DEEPSEEK_API_KEY || "",
++  deepseekBaseUrl: process.env.DEEPSEEK_BASE_URL || "https://api.deepseek.com",
++  deepseekModel: process.env.DEEPSEEK_MODEL || "deepseek-v4-flash",
++  deepseekMaxTokens: Number(process.env.DEEPSEEK_MAX_TOKENS || 8192),
+   wechatAppId: process.env.WECHAT_APP_ID || "",
+   wechatAppSecret: process.env.WECHAT_APP_SECRET || "",
+ };
+-if (config.aiProvider === "codex") config.codexLoggedIn = await checkCodexLogin(config);
++if (config.aiProvider === "codex" || config.imageProvider === "codex") {
++  config.codexLoggedIn = await checkCodexLogin(config);
++}
+ 
+ const store = new StateStore(path.join(dataDir, "state.json"));
+ await store.init();
+@@ -43,11 +50,18 @@ function integrationStatus() {
+   return {
+     ai,
+     openai: config.aiProvider === "openai" && Boolean(config.openaiApiKey),
++    deepseek: config.aiProvider === "deepseek" && Boolean(config.deepseekApiKey),
+     aiProvider: config.aiProvider,
+-    chatgpt: config.aiProvider === "codex" && config.codexLoggedIn,
++    imageProvider: config.imageProvider,
++    chatgpt: (config.aiProvider === "codex" || config.imageProvider === "codex") && config.codexLoggedIn,
+     wechat: Boolean(config.wechatAppId && config.wechatAppSecret),
+-    textModel: config.aiProvider === "codex" ? config.codexModel : config.textModel,
+-    imageModel: config.aiProvider === "codex" ? "ChatGPT imagegen" : config.imageModel,
++    textModel:
++      config.aiProvider === "codex"
++        ? config.codexModel
++        : config.aiProvider === "deepseek"
++          ? config.deepseekModel
++          : config.textModel,
++    imageModel: config.imageProvider === "codex" ? "ChatGPT imagegen" : config.imageModel,
+   };
+ }
+ 
+diff --git a/test/codex.test.js b/test/codex.test.js
+index 07db863..d3a36a5 100644
+--- a/test/codex.test.js
++++ b/test/codex.test.js
+@@ -30,4 +30,22 @@ test("AI readiness follows the selected provider", () => {
+   assert.equal(isAiReady({ aiProvider: "codex", codexLoggedIn: true }), true);
+   assert.equal(isAiReady({ aiProvider: "codex", codexLoggedIn: false }), false);
+   assert.equal(isAiReady({ aiProvider: "openai", openaiApiKey: "key" }), true);
++  assert.equal(
++    isAiReady({
++      aiProvider: "deepseek",
++      deepseekApiKey: "key",
++      imageProvider: "codex",
++      codexLoggedIn: true,
++    }),
++    true,
++  );
++  assert.equal(
++    isAiReady({
++      aiProvider: "deepseek",
++      deepseekApiKey: "key",
++      imageProvider: "codex",
++      codexLoggedIn: false,
++    }),
++    false,
++  );
+ });
+diff --git a/test/deepseek.test.js b/test/deepseek.test.js
+new file mode 100644
+index 0000000..3812c9d
+--- /dev/null
++++ b/test/deepseek.test.js
+@@ -0,0 +1,27 @@
++import test from "node:test";
++import assert from "node:assert/strict";
++import { deepSeekClientOptions, deepSeekRequestBody, parseDeepSeekJson } from "../src/deepseek.js";
++
++test("DeepSeek uses the official OpenAI-compatible endpoint", () => {
++  assert.deepEqual(deepSeekClientOptions({ deepseekApiKey: "secret" }), {
++    apiKey: "secret",
++    baseURL: "https://api.deepseek.com",
++  });
++});
++
++test("DeepSeek requests JSON output with the configured model", () => {
++  const body = deepSeekRequestBody({
++    prompt: "写文章",
++    schema: { type: "object" },
++    config: { deepseekModel: "deepseek-v4-flash", deepseekMaxTokens: 4096 },
++  });
++  assert.equal(body.model, "deepseek-v4-flash");
++  assert.deepEqual(body.response_format, { type: "json_object" });
++  assert.deepEqual(body.thinking, { type: "disabled" });
++  assert.equal(body.max_tokens, 4096);
++});
++
++test("DeepSeek JSON parser accepts plain JSON and fenced JSON", () => {
++  assert.deepEqual(parseDeepSeekJson('{"ok":true}'), { ok: true });
++  assert.deepEqual(parseDeepSeekJson('```json\n{"ok":true}\n```'), { ok: true });
++});

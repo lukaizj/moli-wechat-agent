@@ -1,0 +1,42 @@
+OpenAI API key verification
+Date: 2026-08-04 Asia/Shanghai
+Project: /Users/qcc/moli-wechat-agent
+
+BASELINE
+Command:
+  curl -fsS http://127.0.0.1:3210/api/health
+Literal output:
+  {"ok":true,"integrations":{"openai":false,"wechat":true,"textModel":"gpt-5.6-terra","imageModel":"gpt-image-2"},"activeRunId":null}
+Exit status: 0
+
+MODIFIED KEY AUTHENTICATION
+Command:
+  GET https://api.openai.com/v1/models with OPENAI_API_KEY from .env
+Literal output:
+  {"ok":true,"status":200,"modelCount":118,"textModel":"gpt-5.6-terra","textModelAvailable":true,"imageModel":"gpt-image-2","imageModelAvailable":true}
+Exit status: 0
+
+MODEL REQUEST
+Command:
+  POST https://api.openai.com/v1/responses with model gpt-5.6-terra and max_output_tokens 16
+Literal output:
+  {"ok":false,"status":429,"error":{"type":"insufficient_quota","code":"insufficient_quota","message":"You exceeded your current quota, please check your plan and billing details. For more information on this error, read the docs: https://platform.openai.com/docs/guides/error-codes/api-errors."}}
+Exit status: 1
+
+PROJECT HEALTH
+Command:
+  node src/server.js; curl -fsS http://127.0.0.1:3210/api/health
+Literal output:
+  {"ok":true,"integrations":{"openai":true,"wechat":true,"textModel":"gpt-5.6-terra","imageModel":"gpt-image-2"},"activeRunId":null}
+Exit status: 0
+
+TESTS
+Command:
+  npm test
+Literal result:
+  tests 7; pass 7; fail 0; cancelled 0; skipped 0; todo 0
+Exit status: 0
+
+Credential handling:
+  .env mode: 600
+  The API key is intentionally omitted from this record.

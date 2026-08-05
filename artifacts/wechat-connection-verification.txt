@@ -1,0 +1,39 @@
+WeChat Official Account connection verification
+Date: 2026-08-04 Asia/Shanghai
+Project: /Users/qcc/moli-wechat-agent
+
+BASELINE
+Command:
+  node stable-token probe using .env WECHAT_APP_ID and WECHAT_APP_SECRET
+Input:
+  force_refresh=true; API IP whitelist not yet configured
+Literal output:
+  {"ok":false,"status":200,"errcode":40164,"errmsg":"invalid ip 218.4.167.70 ipv6 ::ffff:218.4.167.70, not in whitelist rid: 6a719c10-4690e75b-5b05578a"}
+Exit status: 0
+
+MODIFIED
+Command:
+  node stable-token probe using .env WECHAT_APP_ID and WECHAT_APP_SECRET
+Input:
+  force_refresh=true; API IP whitelist contains 218.4.167.70
+Literal output:
+  {"ok":true,"status":200,"tokenLength":137,"expiresIn":7200}
+Exit status: 0
+
+PROJECT HEALTH
+Command:
+  node src/server.js; curl -fsS http://127.0.0.1:3210/api/health
+Literal output:
+  {"ok":true,"integrations":{"openai":false,"wechat":true,"textModel":"gpt-5.6-terra","imageModel":"gpt-image-2"},"activeRunId":null}
+Exit status: 0
+
+TESTS
+Command:
+  npm test
+Literal result:
+  tests 7; pass 7; fail 0; cancelled 0; skipped 0; todo 0
+Exit status: 0
+
+Credential handling:
+  .env mode: 600
+  AppSecret is intentionally omitted from this record.

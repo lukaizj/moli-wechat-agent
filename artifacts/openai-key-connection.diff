@@ -1,0 +1,11 @@
+--- .env.before-openai-20260804T160400
++++ .env
+@@ OpenAI integration @@
+-OPENAI_API_KEY=
++OPENAI_API_KEY=<configured:164-chars; redacted>
+
+Remote account changes:
+- Created API key: moli-wechat-agent
+- Project: Default project
+- Owner: current user
+- Permissions: All

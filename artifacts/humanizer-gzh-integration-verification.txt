@@ -1,0 +1,103 @@
+Objective
+Integrate op7418/Humanizer-zh as a post-writing editorial stage and isjiamu/gzh-design-skill as the WeChat theme renderer and deterministic HTML gate.
+
+Pinned upstream inputs
+- Humanizer-zh commit: 91f3d394db8419c20d67ebe22a96cf8fee0a404b
+- Humanizer-zh license: MIT
+- gzh-design-skill commit: ba1f4175519b481cb3566616c9e5178705067904
+- gzh-design-skill license: AGPL-3.0-or-later
+- Sources and license texts: /Users/qcc/moli-wechat-agent/vendor
+
+Changed branches and fields
+- Pipeline steps changed from research/writing/image/wechat to research/writing/humanize/image/design/wechat.
+- settings.humanizeEnabled defaults to true.
+- settings.designTheme defaults to auto and supports all six upstream registered themes.
+- Humanizer score and selected design theme are persisted on each article.
+- The upstream validate_gzh_html.py gate runs before WeChat draft submission and rejects ERROR or WARNING output.
+- Combined application package license changed to AGPL-3.0-or-later and the UI exposes corresponding-source notices.
+
+Original preservation
+Command:
+  shasum -a 256 artifacts/humanizer-gzh-integration-original/src/ai.js artifacts/humanizer-gzh-integration-original/src/pipeline.js artifacts/humanizer-gzh-integration-original/src/server.js artifacts/humanizer-gzh-integration-original/src/article.js artifacts/humanizer-gzh-integration-original/src/defaults.js
+Literal output:
+  992043b7fb337317b2b8fcb227572cc3631badf67ab5c4c0c0f23db0e780b996  artifacts/humanizer-gzh-integration-original/src/ai.js
+  9f170257a30ff3b96f08b5f0aa4479eb3b6904ff37607be9a31825288806b919  artifacts/humanizer-gzh-integration-original/src/pipeline.js
+  37e578ae50b3bbd40d548c05b6afe6212fcbeabfae88fc385d83366e2e66ccbd  artifacts/humanizer-gzh-integration-original/src/server.js
+  efcefa69ff8f136064449933110326a49a0ed2da2bb3b51eb36c22266c6bbadf  artifacts/humanizer-gzh-integration-original/src/article.js
+  82311227988a9ca0337da9d6014a31d5cea52ccc68a7204d3901e56feb05b154  artifacts/humanizer-gzh-integration-original/src/defaults.js
+Exit status: 0
+
+Baseline behavior
+Input:
+  A normal live content run before integration.
+Literal state:
+  steps=[research,writing,image,wechat]
+  humanizer=null
+  designTheme=null
+  HTML root=<div>
+  upstream gzh validator not executed
+
+Automated modified verification
+Command:
+  npm test
+Literal output summary:
+  tests 15
+  pass 15
+  fail 0
+Exit status: 0
+
+Six-theme validator matrix
+Command:
+  Generate sample HTML for each designThemes key and call validateGzhHtml().
+Literal output:
+  moyu-green leaf=21
+  red-white leaf=21
+  graphite-minimal leaf=21
+  zen-whitespace leaf=21
+  moyu-ticket leaf=21
+  olive-journal leaf=21
+Exit status: 0
+
+End-to-end modified verification
+Run ID:
+  a2162b53-42ab-4ccc-bf4d-1c7aa56c5c41
+Literal results:
+  mode=deepseek
+  status=completed
+  steps=[research:done,writing:done,humanize:done,image:done,design:done,wechat:done]
+  title=聊天框正在吃掉你的办公软件
+  humanizer_total=40/50
+  design_theme=moyu-green
+  design_theme_name=摸鱼绿
+  gzh_leaf_count=74
+  persisted_html_revalidation_leaf_count=74
+  image=/Users/qcc/moli-wechat-agent/data/generated/a2162b53-42ab-4ccc-bf4d-1c7aa56c5c41.png
+  image_format=PNG 1693x929 RGB
+  wechat_status=wechat_draft
+  wechat_media_id=ZHxeX3ewRo-_vXr2gv0J0T1T-_xwOQf2KUCi4mFXdn5Usmbnoz3cbFqx44ExqNot
+Exit/result status: completed
+
+UI verification
+Inputs:
+  Dashboard, settings, and latest draft views at http://127.0.0.1:3210.
+Literal results:
+  Six pipeline stages visible.
+  Six-theme selector visible with auto selected.
+  Humanizer toggle visible and checked.
+  Latest draft metadata shows 摸鱼绿 · Humanizer 40/50.
+  Corresponding-source notice and /source route visible.
+  Browser console errors/warnings=[]
+
+Patch replay verification
+Command:
+  git apply --check artifacts/humanizer-gzh-integration.patch && git apply artifacts/humanizer-gzh-integration.patch
+Literal output:
+  patch_check=ok patch_apply=ok file_hashes_match=35
+Exit status: 0
+
+Runtime health
+Command:
+  curl -fsS http://127.0.0.1:3210/api/health
+Literal output:
+  {"ok":true,"integrations":{"ai":true,"openai":false,"deepseek":true,"aiProvider":"deepseek","imageProvider":"codex","chatgpt":true,"wechat":true,"textModel":"deepseek-v4-flash","imageModel":"ChatGPT imagegen"},"activeRunId":null}
+Exit status: 0

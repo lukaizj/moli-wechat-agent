@@ -1,0 +1,43 @@
+Objective
+Activate the DeepSeek text provider with the supplied credential while retaining ChatGPT/Codex for research and image generation.
+
+Secret handling
+- The credential is stored only in /Users/qcc/moli-wechat-agent/.env with mode 600.
+- The credential is redacted from this record and from the configuration diff.
+
+Configuration verification
+Command behavior:
+  Parse .env, assert AI_PROVIDER=deepseek, IMAGE_PROVIDER=codex, a non-empty sk-prefixed DEEPSEEK_API_KEY, and DEEPSEEK_MODEL=deepseek-v4-flash.
+Literal output:
+  provider=deepseek image_provider=codex key=present model=deepseek-v4-flash env_mode=600
+Exit status: 0
+
+Live DeepSeek API verification
+Input:
+  A schema-bound JSON request through runDeepSeekStructured(); credential redacted.
+Literal output:
+  {"ok":true,"provider":"deepseek"}
+Exit status: 0
+
+Service health verification
+Command:
+  curl -fsS http://127.0.0.1:3210/api/health
+Literal output:
+  {"ok":true,"integrations":{"ai":true,"openai":false,"deepseek":true,"aiProvider":"deepseek","imageProvider":"codex","chatgpt":true,"wechat":true,"textModel":"deepseek-v4-flash","imageModel":"ChatGPT imagegen"},"activeRunId":null}
+Exit status: 0
+
+End-to-end verification
+Run ID:
+  a03797f1-a657-400b-886e-9ee152aa9eb3
+Literal results:
+  mode=deepseek
+  status=completed
+  title=别把 AI 当外挂：Docs 把图示写进正文
+  plain_text_length=1688
+  image=/Users/qcc/moli-wechat-agent/data/generated/a03797f1-a657-400b-886e-9ee152aa9eb3.png
+  wechat_status=wechat_draft
+  wechat_media_id=ZHxeX3ewRo-_vXr2gv0J0RaEc6o_UXEu_YYxQlntbLkLp7lfofUKSAfYbpVkpRao
+Exit/result status: completed
+
+Rollback input
+  /Users/qcc/moli-wechat-agent/.env.before-deepseek-activation-20260804T164500
