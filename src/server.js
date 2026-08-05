@@ -317,27 +317,43 @@ app.post("/api/articles/:id/sync-metrics", async (request, response, next) => {
     let metrics = article.metrics || { reads: 0, likes: 0, looking: 0, shares: 0 };
     let synced = false;
 
-    if (config.wechatAppId && config.wechatAppSecret) {
+    const appId = config.wechatAppId || state.settings.wechatAppId;
+    const appSecret = config.wechatAppSecret || state.settings.wechatAppSecret;
+
+    if (appId && appSecret) {
       try {
-        const accessToken = await getStableAccessToken(config);
+        const accessToken = await getStableAccessToken({ ...config, wechatAppId: appId, wechatAppSecret: appSecret });
         const today = new Date();
         const endDate = today.toISOString().slice(0, 10);
-        const past = new Date(today.getTime() - 7 * 24 * 3600 * 1000);
+        const past = new Date(today.getTime() - 14 * 24 * 3600 * 1000);
         const beginDate = past.toISOString().slice(0, 10);
         const list = await getArticleTotalData(accessToken, beginDate, endDate);
-        const matched = list.find((item) => item.title === article.title || item.title?.includes(article.title));
+        const matched = list.find(
+          (item) =>
+            item.title === article.title ||
+            (item.title && article.title && (item.title.includes(article.title) || article.title.includes(item.title))),
+        );
         if (matched && matched.details && matched.details.length > 0) {
           const detail = matched.details[matched.details.length - 1];
           metrics = {
-            reads: detail.int_page_read_user || detail.target_user || metrics.reads || 0,
-            likes: detail.like_num || metrics.likes || 0,
-            looking: detail.add_to_fav_user || metrics.looking || 0,
-            shares: detail.share_user || metrics.shares || 0,
+            reads: detail.int_page_read_user || detail.target_user || detail.int_page_read_count || 0,
+            likes: detail.like_num || 0,
+            looking: detail.add_to_fav_user || detail.ori_page_read_user || 0,
+            shares: detail.share_user || detail.share_count || 0,
           };
           synced = true;
         }
       } catch (err) {
         logger.warn("wechat", `从微信同步数据失败: ${err.message}`);
+        if (err.message.includes("48001")) {
+          return response.json({
+            ok: true,
+            metrics,
+            synced: false,
+            unauthorized: true,
+            errorMsg: "当前公众号未获得微信数据接口权限（48001），你可以直接手动输入数据",
+          });
+        }
       }
     }
 

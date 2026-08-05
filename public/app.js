@@ -327,8 +327,22 @@ function renderRetrospectiveReport(report, title = "") {
   `;
 }
 
+function populateRetrospectiveForm(article, metrics) {
+  const form = $("#retrospective-form");
+  if (!form) return;
+  const m = metrics || article?.metrics || {};
+  form.elements.reads.value = m.reads !== undefined && m.reads !== null ? m.reads : 0;
+  form.elements.likes.value = m.likes !== undefined && m.likes !== null ? m.likes : 0;
+  form.elements.looking.value = m.looking !== undefined && m.looking !== null ? m.looking : 0;
+  form.elements.shares.value = m.shares !== undefined && m.shares !== null ? m.shares : 0;
+  if (article?.feedback) form.elements.feedback.value = article.feedback;
+}
+
 async function syncArticleMetrics(articleId) {
   if (!articleId) return;
+  const article = state.articles?.find((a) => a.id === articleId);
+  if (article) populateRetrospectiveForm(article);
+
   const syncBtn = $("#sync-metrics-btn");
   if (syncBtn) {
     syncBtn.disabled = true;
@@ -336,14 +350,14 @@ async function syncArticleMetrics(articleId) {
   }
   try {
     const res = await api(`/api/articles/${articleId}/sync-metrics`, { method: "POST", body: "{}" });
-    const form = $("#retrospective-form");
-    if (form && res.metrics) {
-      form.elements.reads.value = res.metrics.reads || 0;
-      form.elements.likes.value = res.metrics.likes || 0;
-      form.elements.looking.value = res.metrics.looking || 0;
-      form.elements.shares.value = res.metrics.shares || 0;
+    if (res.synced && res.metrics) {
+      populateRetrospectiveForm(article, res.metrics);
+      toast("已成功从微信公众号同步最新线上统计数据");
+    } else if (res.unauthorized) {
+      toast(res.errorMsg || "当前公众号为未认证个人号，微信未开放 DataCube 统计接口，可直接手动输入数据", true);
+    } else {
+      toast("未在微信最近统计数据中找到该文章，你可以直接在下方框中手动输入数据");
     }
-    toast(res.synced ? "已成功从公众号同步该文章最新统计数据" : "已加载当前本地保存的数据（填入 AppID / Secret 可同步公众号实时数据）");
   } catch (error) {
     toast(error.message, true);
   } finally {
