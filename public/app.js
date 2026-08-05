@@ -61,18 +61,23 @@ function goTo(view) {
 }
 
 function renderIntegrations() {
-  const { openai, ai = openai, aiProvider, imageProvider, wechat } = state.integrations;
-  const currentAiProvider = state.settings?.aiProvider || aiProvider || "codex";
-  const currentImgProvider = state.settings?.imageProvider || imageProvider || "codex";
+  const { ai, wechat } = state.integrations;
+  const currentAiProvider = state.settings?.aiProvider || state.integrations.aiProvider || "codex";
+  const currentImgProvider = state.settings?.imageProvider || state.integrations.imageProvider || "codex";
   const aiTextName =
-    currentAiProvider === "gemini"
+    currentAiProvider === "gemini" || currentAiProvider === "antigravity"
       ? "Gemini"
       : currentAiProvider === "deepseek"
         ? "DeepSeek"
         : currentAiProvider === "codex"
           ? "ChatGPT 会员"
           : "OpenAI";
-  const imgTextName = currentImgProvider === "gemini" ? "Gemini" : "GPT";
+  const imgTextName =
+    currentImgProvider === "gemini" || currentImgProvider === "antigravity"
+      ? "Gemini"
+      : currentImgProvider === "codex"
+        ? "GPT"
+        : "OpenAI";
   const label = `${aiTextName} 文案 + ${imgTextName} 配图`;
   $("#openai-dot").classList.toggle("ready", ai);
   $("#wechat-dot").classList.toggle("ready", wechat);

@@ -49,22 +49,35 @@ app.use("/generated", express.static(path.join(dataDir, "generated")));
 app.use(express.static(path.join(rootDir, "public")));
 
 function integrationStatus() {
-  const ai = isAiReady(config);
+  const settings = store.snapshot()?.settings || {};
+  const mergedConfig = {
+    ...config,
+    aiProvider: settings.aiProvider || config.aiProvider,
+    imageProvider: settings.imageProvider || config.imageProvider,
+  };
+  const ai = isAiReady(mergedConfig);
   return {
     ai,
-    openai: config.aiProvider === "openai" && Boolean(config.openaiApiKey),
-    deepseek: config.aiProvider === "deepseek" && Boolean(config.deepseekApiKey),
-    aiProvider: config.aiProvider,
-    imageProvider: config.imageProvider,
-    chatgpt: (config.aiProvider === "codex" || config.imageProvider === "codex") && config.codexLoggedIn,
+    openai: mergedConfig.aiProvider === "openai" && Boolean(config.openaiApiKey),
+    deepseek: mergedConfig.aiProvider === "deepseek" && Boolean(config.deepseekApiKey),
+    aiProvider: mergedConfig.aiProvider,
+    imageProvider: mergedConfig.imageProvider,
+    chatgpt: (mergedConfig.aiProvider === "codex" || mergedConfig.imageProvider === "codex") && config.codexLoggedIn,
     wechat: Boolean(config.wechatAppId && config.wechatAppSecret),
     textModel:
-      config.aiProvider === "codex"
+      mergedConfig.aiProvider === "codex"
         ? config.codexModel
-        : config.aiProvider === "deepseek"
+        : mergedConfig.aiProvider === "deepseek"
           ? config.deepseekModel
-          : config.textModel,
-    imageModel: config.imageProvider === "codex" ? "ChatGPT imagegen" : config.imageModel,
+          : mergedConfig.aiProvider === "gemini"
+            ? "Gemini CLI"
+            : config.textModel,
+    imageModel:
+      mergedConfig.imageProvider === "codex"
+        ? "ChatGPT imagegen"
+        : mergedConfig.imageProvider === "gemini"
+          ? "Gemini 生图"
+          : config.imageModel,
   };
 }
 
