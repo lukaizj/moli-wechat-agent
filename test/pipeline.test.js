@@ -33,3 +33,32 @@ test("demo pipeline completes a local reviewable draft without credentials", asy
   assert.equal((await fs.stat(state.articles[0].coverPath)).isFile(), true);
   await fs.rm(directory, { recursive: true, force: true });
 });
+
+test("pipeline accepts referenceArticle and customTopic options for imitation mode", async () => {
+  const directory = await fs.mkdtemp(path.join(os.tmpdir(), "moli-imitation-"));
+  const store = new StateStore(path.join(directory, "state.json"));
+  await store.init();
+  const pipeline = new Pipeline({
+    store,
+    generatedDir: path.join(directory, "generated"),
+    config: { openaiApiKey: "", wechatAppId: "", wechatAppSecret: "" },
+  });
+
+  const refArticle = "这是一篇关于爆款思维的范文，强调开门见山提出反常识观点。";
+  const run = await pipeline.start("manual", {
+    referenceArticle: refArticle,
+    customTopic: "如何用 AI 重构个人知识库",
+  });
+
+  for (let attempt = 0; attempt < 100; attempt += 1) {
+    const current = store.snapshot().runs.find((item) => item.id === run.id);
+    if (["completed", "failed"].includes(current.status)) break;
+    await new Promise((resolve) => setTimeout(resolve, 20));
+  }
+
+  const state = store.snapshot();
+  const article = state.articles[0];
+  assert.equal(article.topic.title, "如何用 AI 重构个人知识库");
+  assert.equal(article.isImitation, true);
+  await fs.rm(directory, { recursive: true, force: true });
+});

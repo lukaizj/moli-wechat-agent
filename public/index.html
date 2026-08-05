@@ -54,18 +54,21 @@
                   <span class="button-symbol">↗</span>
                   <span><strong>生成今日文章</strong><small>预计 2–5 分钟</small></span>
                 </button>
+                <button class="secondary-button imitate-trigger-button" id="imitate-modal-open-button" style="margin-top: 10px; width: 100%;">
+                  <span>✦ <strong>模仿推文生成</strong><small>粘贴范文并可选指定新选题</small></span>
+                </button>
               </div>
 
               <div class="issue-spine" aria-label="内容流水线">
                 <div class="spine-line"></div>
                 <div class="spine-step" data-step="research">
                   <span class="step-index">01</span>
-                  <div><strong>研究选题</strong><small>最近 7 天的有效信号</small></div>
+                  <div><strong>研究选题</strong><small>最近 7 天信号 / 指定选题</small></div>
                   <i></i>
                 </div>
                 <div class="spine-step" data-step="writing">
                   <span class="step-index">02</span>
-                  <div><strong>完成成稿</strong><small>观点与文章结构</small></div>
+                  <div><strong>完成成稿</strong><small>观点结构 / 范文仿写</small></div>
                   <i></i>
                 </div>
                 <div class="spine-step" data-step="humanize">
@@ -75,7 +78,7 @@
                 </div>
                 <div class="spine-step" data-step="image">
                   <span class="step-index">04</span>
-                  <div><strong>生成配图</strong><small>ChatGPT 会员封面图</small></div>
+                  <div><strong>生成配图</strong><small>封面与多独立插图</small></div>
                   <i></i>
                 </div>
                 <div class="spine-step" data-step="design">
@@ -199,6 +202,7 @@
               <label><span>长期主题</span><input name="theme" required /><small>例如：AI 与个体创造力、城市生活方式、消费品牌观察</small></label>
               <label><span>目标读者</span><textarea name="audience" rows="3" required></textarea></label>
               <label><span>写作气质</span><textarea name="tone" rows="3" required></textarea></label>
+              <label><span>默认风格参考推文（选填）</span><textarea name="referenceArticle" rows="4" placeholder="在此粘贴希望日常自动任务默认模仿的公众号爆款推文..."></textarea><small>配置后，自动运行将默认分析并模仿此范文的开篇与段落文风。</small></label>
               <div class="field-row two-columns">
                 <label><span>目标篇幅</span><div class="suffix-input"><input name="targetLength" type="number" min="600" max="5000" /><em>字</em></div></label>
                 <label><span>定时生成</span><div class="schedule-input"><input name="scheduleTime" type="time" /><label class="switch"><input name="scheduleEnabled" type="checkbox" /><span></span></label></div></label>
@@ -235,6 +239,7 @@
               <label><span>长期主题</span><input name="theme" required /></label>
               <label><span>目标读者</span><textarea name="audience" rows="2" required></textarea></label>
               <label><span>写作气质</span><textarea name="tone" rows="2" required></textarea></label>
+              <label><span>风格参考推文（选填）</span><textarea name="referenceArticle" rows="3" placeholder="该栏目默认模仿的范文正文..."></textarea></label>
               <div class="field-row two-columns">
                 <label><span>署名</span><input name="author" /></label>
                 <label><span>目标篇幅</span><div class="suffix-input"><input name="targetLength" type="number" min="600" max="5000" /><em>字</em></div></label>
@@ -260,6 +265,30 @@
           </section>
         </section>
       </main>
+    </div>
+
+    <div class="modal-backdrop hidden" id="imitate-modal">
+      <div class="modal-card card">
+        <div class="modal-header">
+          <div><span class="section-label">STYLE IMITATION</span><h3>✦ 模仿推文生成</h3></div>
+          <button class="icon-button" id="imitate-modal-close" type="button" aria-label="关闭">✕</button>
+        </div>
+        <div class="modal-body">
+          <p class="modal-intro">粘贴爆款或目标公众号推文正文，Agent 将深度提炼其开篇 hook、段落节奏、叙事套路与金句惯例，模仿生成新推文并自动推送至草稿箱。</p>
+          <label><span>参考推文内容 / 范文正文</span>
+            <textarea id="imitate-reference-input" rows="8" placeholder="在此粘贴你想要 Agent 模仿的参考公众号推文正文..."></textarea>
+          </label>
+          <label><span>指定新选题 / 切入角度（可选）</span>
+            <input id="imitate-topic-input" placeholder="留空则自动结合 7 天最新有效信号或范文主题提炼新选题" />
+          </label>
+        </div>
+        <div class="modal-footer">
+          <button class="secondary-button" id="imitate-cancel-button" type="button">取消</button>
+          <button class="primary-button compact" id="imitate-run-button" type="button">
+            <span><strong>开始模仿生成并送草稿箱</strong></span>
+          </button>
+        </div>
+      </div>
     </div>
 
     <div class="toast" id="toast" role="status" aria-live="polite"></div>

@@ -153,7 +153,11 @@ export async function chooseTopic(settings, config) {
   return response.output_parsed;
 }
 
-export async function writeArticle(topic, settings, config) {
+export async function writeArticle(topic, settings, config, options = {}) {
+  const refArticle = options.referenceArticle || settings.referenceArticle || "";
+  const referencePrompt = refArticle
+    ? `\n\n【风格范文仿写要求】：\n请深度分析并模仿以下参考范文的叙事套路、开篇 hook 钩子、小节推进逻辑、段落节奏与金句总结习惯，但保持新文章在选题上的独立论据与具体事实：\n---参考范文开始---\n${refArticle.slice(0, 3000)}\n---参考范文结束---\n`
+    : "";
   const sectionHint =
     "另外，为每一个正文小节各写一条横向插图视觉提示词（画面中不要出现任何文字、字母、数字、Logo 或水印），以 sectionImages 字符串数组返回，数组长度必须与该文章的 sections 数量一致。";
   if (config.aiProvider === "codex") {
@@ -161,7 +165,7 @@ export async function writeArticle(topic, settings, config) {
       config,
       effort: "medium",
       schema: articleDraftSchema,
-      prompt: `你是成熟的中文专栏作者。文章要有明确论点、具体场景、可执行的方法和自然节奏；不用套话，不堆砌小标题，不虚构采访、案例或数据。标题不超过 28 个汉字，摘要不超过 90 个汉字。\n\n选题：${topic.title}\n切入角度：${topic.angle}\n为什么现在写：${topic.whyNow}\n读者收获：${topic.readerPromise}\n研究摘要：${topic.researchSummary}\n栏目主题：${settings.theme}\n读者：${settings.audience}\n语气：${settings.tone}\n目标长度：约 ${settings.targetLength} 字\n图片风格：${settings.imageStyle}\n\n完成可直接进入微信公众号编辑器的文章结构，并给出一条不含文字、Logo、水印的封面图视觉提示。${sectionHint}\n只返回符合 schema 的 JSON。`,
+      prompt: `你是成熟的中文专栏作者。文章要有明确论点、具体场景、可执行的方法和自然节奏；不用套话，不堆砌小标题，不虚构采访、案例或数据。标题不超过 28 个汉字，摘要不超过 90 个汉字。${referencePrompt}\n\n选题：${topic.title}\n切入角度：${topic.angle}\n为什么现在写：${topic.whyNow}\n读者收获：${topic.readerPromise}\n研究摘要：${topic.researchSummary}\n栏目主题：${settings.theme}\n读者：${settings.audience}\n语气：${settings.tone}\n目标长度：约 ${settings.targetLength} 字\n图片风格：${settings.imageStyle}\n\n完成可直接进入微信公众号编辑器的文章结构，并给出一条不含文字、Logo、水印的封面图视觉提示。${sectionHint}\n只返回符合 schema 的 JSON。`,
     });
     return ArticleDraft.parse(value);
   }
@@ -169,7 +173,7 @@ export async function writeArticle(topic, settings, config) {
     const value = await runDeepSeekStructured({
       config,
       schema: articleDraftSchema,
-      prompt: `你是成熟的中文专栏作者。文章要有明确论点、具体场景、可执行的方法和自然节奏；不用套话，不堆砌小标题，不虚构采访、案例或数据。标题不超过 28 个汉字，摘要不超过 90 个汉字。\n\n选题：${topic.title}\n切入角度：${topic.angle}\n为什么现在写：${topic.whyNow}\n读者收获：${topic.readerPromise}\n研究摘要：${topic.researchSummary}\n栏目主题：${settings.theme}\n读者：${settings.audience}\n语气：${settings.tone}\n目标长度：约 ${settings.targetLength} 字\n图片风格：${settings.imageStyle}\n\n完成可直接进入微信公众号编辑器的文章结构，并给出一条不含文字、Logo、水印的封面图视觉提示。${sectionHint}`,
+      prompt: `你是成熟的中文专栏作者。文章要有明确论点、具体场景、可执行的方法和自然节奏；不用套话，不堆砌小标题，不虚构采访、案例或数据。标题不超过 28 个汉字，摘要不超过 90 个汉字。${referencePrompt}\n\n选题：${topic.title}\n切入角度：${topic.angle}\n为什么现在写：${topic.whyNow}\n读者收获：${topic.readerPromise}\n研究摘要：${topic.researchSummary}\n栏目主题：${settings.theme}\n读者：${settings.audience}\n语气：${settings.tone}\n目标长度：约 ${settings.targetLength} 字\n图片风格：${settings.imageStyle}\n\n完成可直接进入微信公众号编辑器的文章结构，并给出一条不含文字、Logo、水印的封面图视觉提示。${sectionHint}`,
     });
     return ArticleDraft.parse(value);
   }
@@ -185,7 +189,7 @@ export async function writeArticle(topic, settings, config) {
       },
       {
         role: "user",
-        content: `选题：${topic.title}\n切入角度：${topic.angle}\n为什么现在写：${topic.whyNow}\n读者收获：${topic.readerPromise}\n研究摘要：${topic.researchSummary}\n栏目主题：${settings.theme}\n读者：${settings.audience}\n语气：${settings.tone}\n目标长度：约 ${settings.targetLength} 字\n图片风格：${settings.imageStyle}\n\n请完成可直接进入微信公众号编辑器的文章结构，并给出一条不含任何文字、Logo、水印的封面图生成提示词。${sectionHint}`,
+        content: `选题：${topic.title}\n切入角度：${topic.angle}\n为什么现在写：${topic.whyNow}\n读者收获：${topic.readerPromise}\n研究摘要：${topic.researchSummary}\n栏目主题：${settings.theme}\n读者：${settings.audience}\n语气：${settings.tone}\n目标长度：约 ${settings.targetLength} 字\n图片风格：${settings.imageStyle}${referencePrompt}\n\n请完成可直接进入微信公众号编辑器的文章结构，并给出一条不含任何文字、Logo、水印的封面图生成提示词。${sectionHint}`,
       },
     ],
     text: { format: zodTextFormat(ArticleDraft, "article_draft") },

@@ -77,19 +77,21 @@ export class Pipeline {
     this.activeRunId = null;
   }
 
-  async start(trigger = "manual") {
+  async start(trigger = "manual", options = {}) {
     if (this.activeRunId) {
       const error = new Error("已有一篇文章正在生成，请稍后查看进度");
       error.code = "RUN_ACTIVE";
       throw error;
     }
     const run = makeRun(trigger);
+    if (options.referenceArticle) run.referenceArticle = options.referenceArticle;
+    if (options.customTopic) run.customTopic = options.customTopic;
     this.activeRunId = run.id;
     await this.store.update((state) => {
       state.runs.unshift(run);
       state.runs = state.runs.slice(0, 30);
     });
-    void this.execute(run.id).finally(() => {
+    void this.execute(run.id, options).finally(() => {
       this.activeRunId = null;
     });
     return run;
@@ -118,13 +120,14 @@ export class Pipeline {
     });
   }
 
-  async execute(runId) {
+  async execute(runId, options = {}) {
     const settings = this.store.snapshot().settings;
+    const refArticle = options.referenceArticle || settings.referenceArticle || "";
     const aiReady = isAiReady(this.config);
     const wechatReady = Boolean(this.config.wechatAppId && this.config.wechatAppSecret);
     const mode = aiReady ? "live" : "demo";
     const runStartedAt = new Date().toISOString();
-    logger.info("pipeline", `run ${runId} 开始`, { mode, wechatReady });
+    logger.info("pipeline", `run ${runId} 开始`, { mode, wechatReady, hasReference: Boolean(refArticle) });
 
     try {
       await fs.mkdir(this.generatedDir, { recursive: true });
@@ -134,13 +137,32 @@ export class Pipeline {
         startedAt: runStartedAt,
       });
 
-      await this.updateStep(runId, "research", "running", aiReady ? "检索最近 7 天信号" : "使用内置演示选题");
-      const topic = aiReady ? await chooseTopic(settings, this.config) : demoTopic(settings);
-      await this.updateStep(runId, "research", "done", topic.title);
+      let topic;
+      if (options.customTopic) {
+        await this.updateStep(runId, "research", "done", `指定选题：${options.customTopic}`);
+        topic = {
+          title: options.customTopic,
+          angle: refArticle ? "根据参考范文的框架与文风展开写作" : "针对用户指定主题展开深度讨论",
+          whyNow: "用户指定主题切入",
+          readerPromise: "获得针对指定主题的系统性见解与可执行结论",
+          keywords: [options.customTopic, settings.theme],
+          researchSummary: "用户手动指定的特别主题。",
+          sources: [],
+        };
+      } else {
+        await this.updateStep(runId, "research", "running", aiReady ? "检索最近 7 天信号" : "使用内置演示选题");
+        topic = aiReady ? await chooseTopic(settings, this.config) : demoTopic(settings);
+        await this.updateStep(runId, "research", "done", topic.title);
+      }
       logger.info("pipeline", `选题完成：${topic.title}`, { runId });
 
-      await this.updateStep(runId, "writing", "running", `目标约 ${settings.targetLength} 字`);
-      let draft = aiReady ? await writeArticle(topic, settings, this.config) : demoArticle(topic, settings);
+      const writingDetail = refArticle
+        ? `目标约 ${settings.targetLength} 字 · 范文模仿模式`
+        : `目标约 ${settings.targetLength} 字`;
+      await this.updateStep(runId, "writing", "running", writingDetail);
+      let draft = aiReady
+        ? await writeArticle(topic, settings, this.config, { referenceArticle: refArticle })
+        : demoArticle(topic, settings);
       await this.updateStep(runId, "writing", "done", draft.title);
 
       let humanizer = null;
@@ -252,6 +274,7 @@ export class Pipeline {
         wechatMediaId,
         createdAt: new Date().toISOString(),
         edited: false,
+        isImitation: Boolean(refArticle),
       };
       const completedAt = new Date().toISOString();
       const durationMs = Date.parse(completedAt) - Date.parse(runStartedAt);

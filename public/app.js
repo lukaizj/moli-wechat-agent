@@ -98,9 +98,10 @@ function renderSettingsSummary() {
 }
 
 function articleCard(article) {
+  const badge = article.isImitation ? '<span class="tag-imitation">✦ 范文仿写</span>' : '';
   return `<img src="${article.coverUrl}" alt="" />
     <div>
-      <h4>${escapeHtml(article.title)}</h4>
+      <h4>${escapeHtml(article.title)}${badge}</h4>
       <p>${escapeHtml(article.digest)}</p>
       <footer><i class="status-dot"></i>${statusLabels[article.status]} · ${article.designThemeName || "基础排版"} · ${article.plainTextLength} 字 · ${dateText(article.createdAt, true)}</footer>
     </div>`;
@@ -123,10 +124,13 @@ function renderDraftList() {
   }
   list.innerHTML = state.articles
     .map(
-      (article) => `<button class="draft-list-item ${selectedArticleId === article.id ? "active" : ""}" data-article-id="${article.id}">
+      (article) => {
+        const badge = article.isImitation ? ' <span class="tag-imitation">✦ 仿写</span>' : '';
+        return `<button class="draft-list-item ${selectedArticleId === article.id ? "active" : ""}" data-article-id="${article.id}">
         <img src="${article.coverUrl}" alt="" />
-        <div><h4>${escapeHtml(article.title)}</h4><p>${statusLabels[article.status]} · ${dateText(article.createdAt, true)}</p></div>
-      </button>`,
+        <div><h4>${escapeHtml(article.title)}${badge}</h4><p>${statusLabels[article.status]} · ${dateText(article.createdAt, true)}</p></div>
+      </button>`;
+      },
     )
     .join("");
   $$("[data-article-id]", list).forEach((button) => button.addEventListener("click", () => selectArticle(button.dataset.articleId)));
@@ -378,6 +382,46 @@ function resetColumnForm() {
   $("#column-form-hint").textContent = "新增一个栏目";
 }
 
+function openImitateModal() {
+  $("#imitate-reference-input").value = "";
+  $("#imitate-topic-input").value = "";
+  $("#imitate-modal").classList.remove("hidden");
+}
+
+function closeImitateModal() {
+  $("#imitate-modal").classList.add("hidden");
+}
+
+async function startImitationRun() {
+  const referenceArticle = $("#imitate-reference-input").value.trim();
+  const customTopic = $("#imitate-topic-input").value.trim();
+  if (!referenceArticle && !customTopic) {
+    toast("请粘贴参考推文正文或填写指定选题", true);
+    return;
+  }
+  const button = $("#imitate-run-button");
+  button.disabled = true;
+  button.textContent = "启动中…";
+  try {
+    await api("/api/runs", {
+      method: "POST",
+      body: JSON.stringify({ referenceArticle, customTopic, trigger: "manual" }),
+    });
+    toast("已开始根据范文进行仿写，可在界面查看流程动态");
+    closeImitateModal();
+    await loadState();
+  } catch (error) {
+    toast(error.message, true);
+  } finally {
+    button.disabled = false;
+    button.textContent = "开始模仿生成并送草稿箱";
+  }
+}
+
+$("#imitate-modal-open-button").addEventListener("click", openImitateModal);
+$("#imitate-modal-close").addEventListener("click", closeImitateModal);
+$("#imitate-cancel-button").addEventListener("click", closeImitateModal);
+$("#imitate-run-button").addEventListener("click", startImitationRun);
 $("#edit-button").addEventListener("click", editSelected);
 $("#edit-save").addEventListener("click", saveEdit);
 $("#edit-cancel").addEventListener("click", cancelEdit);

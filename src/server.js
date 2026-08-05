@@ -103,6 +103,7 @@ const allowedSettings = new Set([
   "tone",
   "author",
   "targetLength",
+  "referenceArticle",
   "humanizeEnabled",
   "designTheme",
   "imageStyle",
@@ -144,7 +145,17 @@ app.put("/api/settings", async (request, response, next) => {
 
 app.post("/api/runs", async (request, response, next) => {
   try {
-    const run = await pipeline.start(request.body?.trigger || "manual");
+    const { columnId, referenceArticle, customTopic, trigger } = request.body || {};
+    if (columnId) {
+      await store.update((state) => {
+        const target = state.settings.columns?.find((col) => col.id === columnId);
+        if (target) {
+          state.settings.activeColumnId = columnId;
+          Object.assign(state.settings, target);
+        }
+      });
+    }
+    const run = await pipeline.start(trigger || "manual", { referenceArticle, customTopic });
     response.status(202).json({ ok: true, run });
   } catch (error) {
     if (error.code === "RUN_ACTIVE") return response.status(409).json({ ok: false, error: error.message });
