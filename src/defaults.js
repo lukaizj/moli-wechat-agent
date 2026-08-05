@@ -16,6 +16,10 @@ export const defaultSettings = {
   timezone: "Asia/Shanghai",
   allowComments: false,
   fansOnlyComments: false,
+  evolutionRules: [
+    "文章开篇 100 字内必须直接给出核心观点与结论，避免漫长铺垫",
+    "标题优先采用利益引导或反常识悬念，突出读者切实收获",
+  ],
   activeColumnId: "default",
   columns: [
     {
@@ -31,6 +35,10 @@ export const defaultSettings = {
       aiProvider: "codex",
       imageProvider: "codex",
       imageStyle: "克制的编辑插画，清晰构图，具有杂志封面的视觉张力，不出现文字与水印",
+      evolutionRules: [
+        "文章开篇 100 字内必须直接给出核心观点与结论，避免漫长铺垫",
+        "标题优先采用利益引导或反常识悬念，突出读者切实收获",
+      ],
     },
   ],
 };

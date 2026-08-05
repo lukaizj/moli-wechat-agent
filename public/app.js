@@ -223,6 +223,8 @@ function render() {
   renderDraftList();
   renderRuns();
   renderColumns();
+  renderEvolutionRules();
+  renderRetrospectiveArticleSelect();
   if (selectedArticleId) selectArticle(selectedArticleId);
 }
 
@@ -259,6 +261,110 @@ async function restartRun() {
   try {
     await api("/api/runs/restart", { method: "POST", body: JSON.stringify({ trigger: "restart" }) });
     toast("已成功取消旧任务并重新开始生成");
+    await loadState();
+  } catch (error) {
+    toast(error.message, true);
+  }
+}
+
+function renderEvolutionRules() {
+  const rules = state.settings?.evolutionRules || [];
+  $("#rules-total-count").textContent = `${rules.length} 条规则`;
+  const container = $("#rules-list");
+  if (!container) return;
+  if (!rules.length) {
+    container.innerHTML = '<div class="empty-state"><span>🧠</span><strong>暂无已积累的规则</strong><p>进行推文复盘后，AI 提炼的爆款经验规则会显示在这里。</p></div>';
+    return;
+  }
+  container.innerHTML = rules
+    .map(
+      (rule, index) =>
+        `<div class="rule-item"><div><strong>#${index + 1}</strong> ${escapeHtml(rule)}</div><button type="button" class="rule-delete-btn" data-rule-index="${index}" title="删除该规则">✕</button></div>`
+    )
+    .join("");
+}
+
+function renderRetrospectiveArticleSelect() {
+  const select = $("#retro-article-select");
+  if (!select) return;
+  const articles = state.articles || [];
+  const currentVal = select.value;
+  if (!articles.length) {
+    select.innerHTML = '<option value="">暂无草稿或推文记录，请先生成推文</option>';
+    return;
+  }
+  select.innerHTML = articles
+    .map((a) => `<option value="${a.id}">${escapeHtml(a.title)} (${dateText(a.createdAt)})</option>`)
+    .join("");
+  if (currentVal && articles.some((a) => a.id === currentVal)) {
+    select.value = currentVal;
+  }
+}
+
+function renderRetrospectiveReport(report, title = "") {
+  const card = $("#retro-report-card");
+  if (!report) {
+    card.classList.add("hidden");
+    return;
+  }
+  card.classList.remove("hidden");
+  $("#retro-report-title").textContent = `AI 复盘诊断报告 · ${title}`;
+  $("#retro-report-rating").textContent = report.scoreRating || "综合评估";
+
+  const strengthsHtml = (report.strengths || []).map((s) => `<li>${escapeHtml(s)}</li>`).join("");
+  const weaknessesHtml = (report.weaknesses || []).map((w) => `<li>${escapeHtml(w)}</li>`).join("");
+  const actionsHtml = (report.actionItems || []).map((a) => `<li>${escapeHtml(a)}</li>`).join("");
+  const rulesHtml = (report.newRules || []).map((r) => `<li>${escapeHtml(r)}</li>`).join("");
+
+  $("#retro-report-content").innerHTML = `
+    <div class="retro-report-summary"><strong>诊断总结：</strong> ${escapeHtml(report.summary || "分析已完成")}</div>
+    <div class="retro-grid">
+      <div class="retro-box"><h4 class="green">✦ 优势与亮点归因</h4><ul>${strengthsHtml || "<li>整体表现稳健</li>"}</ul></div>
+      <div class="retro-box"><h4 class="amber">⚠ 短板与丢分点剖析</h4><ul>${weaknessesHtml || "<li>无明显缺陷</li>"}</ul></div>
+      <div class="retro-box"><h4 class="blue">⚡ 落地改进动作</h4><ul>${actionsHtml || "<li>保持当前写作节奏</li>"}</ul></div>
+      <div class="retro-box"><h4 class="purple">🧠 提炼入库的 Agent 规则</h4><ul>${rulesHtml || "<li>规则已同步至记忆库</li>"}</ul></div>
+    </div>
+  `;
+}
+
+async function handleRetrospectiveSubmit(event) {
+  event.preventDefault();
+  const form = event.currentTarget;
+  const articleId = form.elements.articleId.value;
+  if (!articleId) {
+    toast("请选择要复盘的推文", true);
+    return;
+  }
+  const reads = Number(form.elements.reads.value || 0);
+  const likes = Number(form.elements.likes.value || 0);
+  const looking = Number(form.elements.looking.value || 0);
+  const shares = Number(form.elements.shares.value || 0);
+  const feedback = form.elements.feedback.value || "";
+
+  const submitBtn = $("#retro-submit-button");
+  submitBtn.disabled = true;
+  submitBtn.textContent = "AI 深入剖析归因中…";
+  try {
+    const res = await api(`/api/articles/${articleId}/retrospective`, {
+      method: "POST",
+      body: JSON.stringify({ metrics: { reads, likes, looking, shares }, feedback }),
+    });
+    toast("复盘诊断完成！提炼出的进化规则已存入 Agent 记忆库");
+    const targetArticle = state.articles.find((a) => a.id === articleId);
+    renderRetrospectiveReport(res.report, targetArticle?.title || "");
+    await loadState();
+  } catch (error) {
+    toast(error.message, true);
+  } finally {
+    submitBtn.disabled = false;
+    submitBtn.textContent = "生成复盘报告并提炼规则";
+  }
+}
+
+async function handleDeleteEvolutionRule(index) {
+  try {
+    await api(`/api/evolution-rules/${index}`, { method: "DELETE" });
+    toast("已从 Agent 记忆库中移除该规则");
     await loadState();
   } catch (error) {
     toast(error.message, true);
@@ -489,5 +595,22 @@ $("#imitate-run-button").addEventListener("click", startImitationRun);
 $("#edit-button").addEventListener("click", editSelected);
 $("#edit-save").addEventListener("click", saveEdit);
 $("#edit-cancel").addEventListener("click", cancelEdit);
+$("#retrospective-form")?.addEventListener("submit", handleRetrospectiveSubmit);
+$("#rules-list")?.addEventListener("click", (e) => {
+  const btn = e.target.closest(".rule-delete-btn");
+  if (btn) {
+    const index = Number(btn.dataset.ruleIndex);
+    handleDeleteEvolutionRule(index);
+  }
+});
+$("#retro-article-select")?.addEventListener("change", (e) => {
+  const articleId = e.target.value;
+  const article = state.articles?.find((a) => a.id === articleId);
+  if (article && article.retrospective) {
+    renderRetrospectiveReport(article.retrospective, article.title);
+  } else {
+    renderRetrospectiveReport(null);
+  }
+});
 
 await loadState();

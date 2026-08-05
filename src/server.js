@@ -8,6 +8,7 @@ import { Pipeline } from "./pipeline.js";
 import { isAiReady } from "./ai.js";
 import { plainTextLength } from "./article.js";
 import { checkCodexLogin } from "./codex.js";
+import { analyzeArticlePerformance } from "./retrospective.js";
 import { logger } from "./logger.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -254,6 +255,71 @@ app.post("/api/articles/:id/push", async (request, response, next) => {
   try {
     const result = await pipeline.pushExisting(request.params.id);
     response.json({ ok: true, ...result });
+  } catch (error) {
+    next(error);
+  }
+});
+
+app.post("/api/articles/:id/retrospective", async (request, response, next) => {
+  try {
+    const { id } = request.params;
+    const { metrics, feedback } = request.body || {};
+    const state = store.snapshot();
+    const article = state.articles.find((item) => item.id === id);
+    if (!article) throw new Error("未找到对应文章记录");
+
+    const report = await analyzeArticlePerformance({
+      article,
+      metrics,
+      feedback,
+      config,
+      settings: state.settings,
+    });
+
+    await store.update((draftState) => {
+      const targetArticle = draftState.articles.find((item) => item.id === id);
+      if (targetArticle) {
+        targetArticle.metrics = metrics;
+        targetArticle.feedback = feedback;
+        targetArticle.retrospective = report;
+      }
+      if (Array.isArray(report.newRules) && report.newRules.length > 0) {
+        if (!Array.isArray(draftState.settings.evolutionRules)) {
+          draftState.settings.evolutionRules = [];
+        }
+        report.newRules.forEach((rule) => {
+          if (rule && !draftState.settings.evolutionRules.includes(rule)) {
+            draftState.settings.evolutionRules.unshift(rule);
+          }
+        });
+        const activeColId = draftState.settings.activeColumnId || "default";
+        const col = draftState.settings.columns?.find((item) => item.id === activeColId);
+        if (col) {
+          col.evolutionRules = [...draftState.settings.evolutionRules];
+        }
+      }
+    });
+
+    response.json({ ok: true, report, evolutionRules: store.snapshot().settings.evolutionRules || [] });
+  } catch (error) {
+    next(error);
+  }
+});
+
+app.delete("/api/evolution-rules/:index", async (request, response, next) => {
+  try {
+    const index = Number(request.params.index);
+    await store.update((draftState) => {
+      if (Array.isArray(draftState.settings.evolutionRules)) {
+        draftState.settings.evolutionRules.splice(index, 1);
+        const activeColId = draftState.settings.activeColumnId || "default";
+        const col = draftState.settings.columns?.find((item) => item.id === activeColId);
+        if (col) {
+          col.evolutionRules = [...draftState.settings.evolutionRules];
+        }
+      }
+    });
+    response.json({ ok: true, evolutionRules: store.snapshot().settings.evolutionRules || [] });
   } catch (error) {
     next(error);
   }

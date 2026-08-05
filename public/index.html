@@ -19,6 +19,7 @@
         <nav class="nav" aria-label="主导航">
           <button class="nav-item active" data-view="dashboard"><span>⌁</span> 今日任务</button>
           <button class="nav-item" data-view="drafts"><span>▤</span> 草稿库 <b id="draft-count">0</b></button>
+          <button class="nav-item" data-view="retrospective"><span>📊</span> 自我复盘</button>
           <button class="nav-item" data-view="settings"><span>⌘</span> 公众号设定</button>
         </nav>
 
@@ -138,6 +139,55 @@
               <div id="run-log" class="run-log"></div>
             </section>
           </div>
+        </section>
+
+        <section class="view" id="view-retrospective">
+          <div class="dashboard-grid">
+            <section class="card">
+              <div class="card-heading">
+                <div><span class="section-label">RETROSPECTIVE & EVOLUTION</span><h3>推文复盘与数据录入</h3></div>
+              </div>
+              <form id="retrospective-form">
+                <label><span>选择历史推文 / 草稿</span>
+                  <select id="retro-article-select" name="articleId" required>
+                    <option value="">加载中...</option>
+                  </select>
+                </label>
+                <div class="form-grid compact">
+                  <label><span>阅读量</span><input type="number" name="reads" placeholder="0" min="0" defaultValue="0" /></label>
+                  <label><span>点赞数</span><input type="number" name="likes" placeholder="0" min="0" defaultValue="0" /></label>
+                  <label><span>在看数</span><input type="number" name="looking" placeholder="0" min="0" defaultValue="0" /></label>
+                  <label><span>转发/分享</span><input type="number" name="shares" placeholder="0" min="0" defaultValue="0" /></label>
+                </div>
+                <label><span>读者反馈 / 你的自我评价</span>
+                  <textarea name="feedback" rows="3" placeholder="填写开篇完播情况、读者评论倾向、或者你觉得这篇文章哪里好或哪里没写好..."></textarea>
+                </label>
+                <div class="form-footer">
+                  <p>点击提交后，AI 会自动剖析归因，并提取新的进化规则放入记忆库。</p>
+                  <button type="submit" class="primary-button compact" id="retro-submit-button">
+                    <span><strong>生成复盘报告并提炼规则</strong></span>
+                  </button>
+                </div>
+              </form>
+            </section>
+
+            <section class="card">
+              <div class="card-heading">
+                <div><span class="section-label">EVOLUTION MEMORY</span><h3>Agent 进化规则库</h3></div>
+                <span class="count-badge" id="rules-total-count">0 条规则</span>
+              </div>
+              <p class="section-intro">复盘提炼出的规则将自动持久化，后续选题、成稿与润色会自动遵循这些规则，越写越好。</p>
+              <div id="rules-list" class="rules-list-container"></div>
+            </section>
+          </div>
+
+          <section class="card hidden" id="retro-report-card" style="margin-top: 20px;">
+            <div class="card-heading">
+              <div><span class="section-label">AI DIAGNOSIS REPORT</span><h3 id="retro-report-title">AI 复盘诊断报告</h3></div>
+              <span class="status-badge" id="retro-report-rating">表现诊断</span>
+            </div>
+            <div id="retro-report-content" class="retro-report-body"></div>
+          </section>
         </section>
 
         <section class="view" id="view-drafts">
