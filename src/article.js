@@ -166,6 +166,7 @@ export function buildWechatHtml(article, topic, bodyImageUrl = "{{BODY_IMAGE_URL
   const themeId = selectDesignTheme(article, topic, options.designTheme);
   const theme = designThemes[themeId];
   const keywords = topic.keywords || [];
+  const sectionUrls = options.sectionUrls || [];
   const sections = article.sections
     .map((section, index) => {
       const paragraphs = section.paragraphs
@@ -177,7 +178,10 @@ export function buildWechatHtml(article, topic, bodyImageUrl = "{{BODY_IMAGE_URL
       const callout = section.callout
         ? `<section style="margin:28px 12px;padding:18px 20px;border-left:4px solid ${theme.primary};background:${theme.pale};color:${theme.dark};font-size:${theme.bodySize};line-height:${theme.lineHeight};">${leaf(section.callout)}</section>`
         : "";
-      return `${sectionHeading(section, index, theme)}\n${paragraphs}\n${callout}`;
+      const sectionImage = sectionUrls[index]
+        ? `<section style="margin:0 12px 30px;"><img src="${escapeHtml(sectionUrls[index])}" alt="${escapeHtml(normalizePunctuation(section.heading))}" style="display:block;width:100%;height:auto;margin:0;border-radius:4px;" /></section>`
+        : "";
+      return `${sectionHeading(section, index, theme)}\n${paragraphs}\n${callout}\n${sectionImage}`;
     })
     .join("\n");
 

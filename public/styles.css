@@ -210,6 +210,28 @@ main { min-width: 0; }
 .license-footer { padding: 0 24px 20px 294px; color: #8b93a4; font-size: 10px; line-height: 1.6; text-align: center; }
 .license-footer a { color: #687184; }
 
+.edit-panel { margin: 18px 22px 26px; padding: 22px; border: 1px solid #e0e4ec; border-radius: 14px; background: #fbfcff; }
+.edit-panel h3 { margin: 0 0 16px; font: 700 19px/1.3 "Songti SC", "STSong", serif; }
+.edit-panel h3 small { margin-left: 8px; color: #9aa3b2; font: 600 11px/1 sans-serif; }
+.edit-panel label { display: block; margin-bottom: 14px; }
+.edit-panel label > span { display: block; margin-bottom: 7px; font-size: 12px; font-weight: 600; }
+.edit-panel input, .edit-panel textarea { width: 100%; border: 1px solid #cfd5e0; border-radius: 8px; padding: 10px 12px; font-size: 13px; background: #fff; resize: vertical; }
+.edit-panel input:focus, .edit-panel textarea:focus { border-color: var(--blue); outline: 3px solid rgba(98,112,255,.1); }
+.edit-panel .code-area { font-family: "SFMono-Regular", Consolas, monospace; font-size: 12px; line-height: 1.55; color: #2b3242; }
+
+.columns-panel { max-width: 1120px; margin: 22px auto 0; padding: 28px 34px; }
+.columns-hint { margin: 0 0 18px; color: #687184; font-size: 12px; line-height: 1.7; }
+.column-list { display: grid; gap: 10px; margin-bottom: 22px; }
+.column-row { display: grid; grid-template-columns: 1fr auto; align-items: center; gap: 14px; padding: 14px 16px; border: 1px solid #e2e6ee; border-radius: 12px; background: #fff; }
+.column-row.active { border-color: var(--green); background: #f1faf5; }
+.column-row strong { display: block; font-size: 14px; }
+.column-row small { display: block; margin-top: 4px; color: #8b93a4; font-size: 11px; }
+.column-actions { display: flex; align-items: center; gap: 8px; }
+.column-form { display: grid; gap: 16px; padding-top: 20px; border-top: 1px dashed #d8dde8; }
+.column-form label > span { display: block; margin-bottom: 7px; font-size: 12px; font-weight: 600; }
+.column-form input:not([type="checkbox"]), .column-form textarea, .column-form select { width: 100%; border: 1px solid #cfd5e0; border-radius: 8px; padding: 11px 13px; font-size: 13px; background: #fff; resize: vertical; }
+.column-form input:focus, .column-form textarea:focus, .column-form select:focus { border-color: var(--blue); outline: 3px solid rgba(98,112,255,.1); }
+
 @keyframes pulse { 50% { box-shadow: 0 0 0 7px rgba(255,90,73,0); } }
 @keyframes view-in { from { opacity: 0; transform: translateY(6px); } }
 

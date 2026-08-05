@@ -149,7 +149,10 @@ function selectArticle(articleId) {
   $("#preview-meta").textContent = `${article.designThemeName || "基础排版"}${humanizerScore} · ${article.plainTextLength} 字 · ${dateText(article.createdAt, true)}`;
   $("#preview-status").textContent = statusLabels[article.status];
   $("#preview-status").classList.toggle("wechat", article.status === "wechat_draft");
-  $("#push-button").classList.toggle("hidden", article.status === "wechat_draft");
+  const editable = article.status === "local_preview";
+  $("#push-button").classList.toggle("hidden", !editable);
+  $("#edit-button").classList.toggle("hidden", !editable);
+  $("#edit-panel").classList.add("hidden");
   $("#wechat-review-link").classList.toggle("hidden", article.status !== "wechat_draft");
   renderDraftList();
 }
@@ -194,6 +197,7 @@ function render() {
   renderLatest();
   renderDraftList();
   renderRuns();
+  renderColumns();
   if (selectedArticleId) selectArticle(selectedArticleId);
 }
 
@@ -262,5 +266,122 @@ $("#latest-draft").addEventListener("click", () => {
 });
 $("#settings-form").addEventListener("submit", saveSettings);
 $("#push-button").addEventListener("click", pushSelected);
+
+async function editSelected() {
+  if (!selectedArticleId) return;
+  const article = state.articles.find((item) => item.id === selectedArticleId);
+  if (!article) return;
+  $("#edit-title").value = article.title;
+  $("#edit-digest").value = article.digest;
+  $("#edit-html").value = article.previewHtml || article.html;
+  $("#edit-panel").classList.remove("hidden");
+  $("#edit-save").disabled = false;
+  $("#edit-save").textContent = "保存修改";
+}
+
+async function saveEdit() {
+  if (!selectedArticleId) return;
+  const button = $("#edit-save");
+  button.disabled = true;
+  button.textContent = "保存中…";
+  try {
+    const body = {
+      title: $("#edit-title").value.trim(),
+      digest: $("#edit-digest").value.trim(),
+      html: $("#edit-html").value,
+    };
+    if (!body.title) throw new Error("标题不能为空");
+    await api(`/api/articles/${selectedArticleId}`, { method: "PATCH", body: JSON.stringify(body) });
+    toast("草稿已保存，可推送或继续预览");
+    await loadState();
+  } catch (error) {
+    toast(error.message, true);
+  } finally {
+    button.disabled = false;
+    button.textContent = "保存修改";
+  }
+}
+
+function cancelEdit() {
+  $("#edit-panel").classList.add("hidden");
+}
+
+function renderColumns() {
+  const columns = state.settings.columns || [];
+  $("#column-count").textContent = `${columns.length} 个`;
+  const list = $("#column-list");
+  if (!columns.length) {
+    list.innerHTML = '<div class="draft-list-empty">还没有栏目，先在下方新增一个。</div>';
+    return;
+  }
+  list.innerHTML = columns
+    .map((column) => {
+      const active = column.id === state.settings.activeColumnId;
+      return `<div class="column-row ${active ? "active" : ""}" data-column-id="${column.id}">
+        <div><strong>${escapeHtml(column.name)}</strong><small>${escapeHtml(column.theme)}</small></div>
+        <div class="column-actions">
+          <button class="text-button" data-action="edit">编辑</button>
+          <button class="text-button" data-action="activate">${active ? "使用中" : "切换"}</button>
+        </div>
+      </div>`;
+    })
+    .join("");
+  $$("[data-column-id]", list).forEach((row) => {
+    const id = row.dataset.columnId;
+    row.querySelector('[data-action="edit"]').addEventListener("click", () => fillColumnForm(id));
+    row.querySelector('[data-action="activate"]').addEventListener("click", () => activateColumn(id));
+  });
+}
+
+async function activateColumn(id) {
+  try {
+    await api(`/api/columns/${id}/activate`, { method: "POST", body: "{}" });
+    toast("已切换栏目，下一次运行将使用新设定");
+    await loadState();
+  } catch (error) {
+    toast(error.message, true);
+  }
+}
+
+function fillColumnForm(id) {
+  const column = (state.settings.columns || []).find((item) => item.id === id);
+  if (!column) return;
+  const form = $("#column-form");
+  for (const [key, value] of Object.entries(column)) {
+    const input = form.elements.namedItem(key);
+    if (!input) continue;
+    input.value = value;
+  }
+  $("#column-form-hint").textContent = `正在编辑栏目：${column.name}`;
+  form.scrollIntoView({ behavior: "smooth", block: "center" });
+}
+
+async function saveColumn(event) {
+  event.preventDefault();
+  const formData = new FormData(event.currentTarget);
+  const body = Object.fromEntries(formData.entries());
+  body.targetLength = Number(body.targetLength);
+  try {
+    await api("/api/columns", { method: "PUT", body: JSON.stringify(body) });
+    toast("栏目已保存");
+    resetColumnForm();
+    await loadState();
+  } catch (error) {
+    toast(error.message, true);
+  }
+}
+
+function resetColumnForm() {
+  const form = $("#column-form");
+  form.reset();
+  form.elements.namedItem("id").value = "";
+  $("#column-form-hint").textContent = "新增一个栏目";
+}
+
+$("#edit-button").addEventListener("click", editSelected);
+$("#edit-save").addEventListener("click", saveEdit);
+$("#edit-cancel").addEventListener("click", cancelEdit);
+$("#column-form").addEventListener("submit", saveColumn);
+$("#column-reset").addEventListener("click", resetColumnForm);
 
 await loadState();

@@ -142,8 +142,22 @@
                 <div class="preview-toolbar">
                   <div><span class="status-badge" id="preview-status">本地预览</span><small id="preview-meta"></small></div>
                   <div>
-                    <button class="secondary-button" id="push-button">写入公众号草稿箱</button>
+                    <button class="secondary-button" id="edit-button">编辑草稿</button>
+                    <button class="secondary-button hidden" id="push-button">写入公众号草稿箱</button>
                     <a class="primary-link hidden" id="wechat-review-link" href="https://mp.weixin.qq.com/" target="_blank" rel="noreferrer">去公众号审核 ↗</a>
+                  </div>
+                </div>
+                <div id="edit-panel" class="edit-panel hidden">
+                  <h3>编辑草稿 <small>保存后即可推送</small></h3>
+                  <label><span>标题</span><input id="edit-title" /></label>
+                  <label><span>摘要</span><textarea id="edit-digest" rows="2"></textarea></label>
+                  <label><span>正文 HTML</span><textarea id="edit-html" rows="16" class="code-area" spellcheck="false"></textarea></label>
+                  <div class="form-footer">
+                    <p>HTML 需符合公众号内联样式规范；封面与插图由系统填充，无需在此填写图片地址。</p>
+                    <div>
+                      <button type="button" class="secondary-button" id="edit-cancel">取消</button>
+                      <button type="button" class="primary-button compact" id="edit-save">保存修改</button>
+                    </div>
                   </div>
                 </div>
                 <div class="phone-wrap">
@@ -208,6 +222,42 @@
               </div>
             </div>
           </form>
+          <section class="columns-panel card">
+            <div class="card-heading">
+              <div><span class="section-label">COLUMNS</span><h3>栏目管理</h3></div>
+              <span class="count-badge" id="column-count">0 个</span>
+            </div>
+            <p class="columns-hint">不同栏目可拥有独立的主题、读者与排版风格；切换栏目即切换下一次运行的设定。微信公众号凭据为全局共用。</p>
+            <div id="column-list" class="column-list"></div>
+            <form id="column-form" class="column-form">
+              <input type="hidden" name="id" />
+              <label><span>栏目名称</span><input name="name" required /></label>
+              <label><span>长期主题</span><input name="theme" required /></label>
+              <label><span>目标读者</span><textarea name="audience" rows="2" required></textarea></label>
+              <label><span>写作气质</span><textarea name="tone" rows="2" required></textarea></label>
+              <div class="field-row two-columns">
+                <label><span>署名</span><input name="author" /></label>
+                <label><span>目标篇幅</span><div class="suffix-input"><input name="targetLength" type="number" min="600" max="5000" /><em>字</em></div></label>
+              </div>
+              <label><span>排版主题</span><select name="designTheme">
+                <option value="auto">自动匹配</option>
+                <option value="moyu-green">摸鱼绿</option>
+                <option value="red-white">红白色系</option>
+                <option value="graphite-minimal">石墨极简风</option>
+                <option value="zen-whitespace">留白禅意风</option>
+                <option value="moyu-ticket">摸鱼票据风</option>
+                <option value="olive-journal">橄榄手记</option>
+              </select></label>
+              <label><span>配图风格</span><textarea name="imageStyle" rows="2"></textarea></label>
+              <div class="form-footer">
+                <p id="column-form-hint">新增一个栏目</p>
+                <div>
+                  <button type="button" class="secondary-button" id="column-reset">清空</button>
+                  <button type="submit" class="primary-button compact"><span><strong>保存栏目</strong></span></button>
+                </div>
+              </div>
+            </form>
+          </section>
         </section>
       </main>
     </div>

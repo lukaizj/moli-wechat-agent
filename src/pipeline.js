@@ -2,16 +2,17 @@ import fs from "node:fs/promises";
 import path from "node:path";
 import { randomUUID } from "node:crypto";
 import { buildWechatHtml, designThemes, plainTextLength, selectDesignTheme } from "./article.js";
-import { chooseTopic, demoArticle, demoTopic, generateCover, isAiReady, writeArticle } from "./ai.js";
+import { chooseTopic, demoArticle, demoTopic, generateCover, generateImage, isAiReady, writeArticle } from "./ai.js";
 import { validateGzhHtml } from "./gzh.js";
 import { humanizeArticle } from "./humanizer.js";
 import { addDraft, getStableAccessToken, uploadArticleImage, uploadPermanentCover } from "./wechat.js";
+import { logger } from "./logger.js";
 
 const steps = [
   ["research", "联网研究与选题"],
   ["writing", "撰写与结构化排版"],
   ["humanize", "Humanizer 去除 AI 味"],
-  ["image", "生成封面配图"],
+  ["image", "生成封面与配图"],
   ["design", "公众号主题排版与校验"],
   ["wechat", "写入公众号草稿箱"],
 ];
@@ -23,10 +24,20 @@ function makeRun(trigger) {
     status: "queued",
     mode: null,
     createdAt: new Date().toISOString(),
+    startedAt: null,
     completedAt: null,
+    durationMs: null,
     articleId: null,
     error: null,
-    steps: steps.map(([key, label]) => ({ key, label, status: "queued", detail: "" })),
+    steps: steps.map(([key, label]) => ({
+      key,
+      label,
+      status: "queued",
+      detail: "",
+      startedAt: null,
+      completedAt: null,
+      durationMs: null,
+    })),
   };
 }
 
@@ -42,6 +53,19 @@ function demoCoverSvg(title) {
     </g>
     <g fill="#fff" opacity=".92"><circle cx="245" cy="242" r="18"/><circle cx="300" cy="242" r="18"/><rect x="225" y="285" width="140" height="14" rx="7"/></g>
     <text x="110" y="930" fill="#596176" font-family="sans-serif" font-size="26">DEMO COVER · ${safeTitle.slice(0, 22)}</text>
+  </svg>`;
+}
+
+function demoSectionSvg(heading, index) {
+  const safe = String(heading || "插图").replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;");
+  const hues = ["#059669", "#DC2626", "#52525B", "#4A5D52", "#ED7B2F"];
+  const color = hues[index % hues.length];
+  return `<svg xmlns="http://www.w3.org/2000/svg" width="1536" height="900" viewBox="0 0 1536 900">
+    <rect width="1536" height="900" fill="#eef1f7"/>
+    <rect x="120" y="120" width="1296" height="660" rx="18" fill="#fff" stroke="${color}" stroke-width="6"/>
+    <circle cx="768" cy="400" r="150" fill="${color}" opacity=".12"/>
+    <text x="768" y="470" fill="${color}" font-family="sans-serif" font-size="40" text-anchor="middle">DEMO · ${safe.slice(0, 16)}</text>
+    <text x="768" y="540" fill="#9aa3b2" font-family="sans-serif" font-size="22" text-anchor="middle">小节插图占位</text>
   </svg>`;
 }
 
@@ -80,10 +104,17 @@ export class Pipeline {
   }
 
   async updateStep(runId, key, status, detail = "") {
+    const now = new Date().toISOString();
     await this.store.update((state) => {
       const run = state.runs.find((item) => item.id === runId);
       const step = run?.steps.find((item) => item.key === key);
-      if (step) Object.assign(step, { status, detail });
+      if (!step) return;
+      if (status === "running" && !step.startedAt) step.startedAt = now;
+      if (["done", "failed", "skipped"].includes(status)) {
+        step.completedAt = now;
+        if (step.startedAt) step.durationMs = Date.parse(now) - Date.parse(step.startedAt);
+      }
+      Object.assign(step, { status, detail });
     });
   }
 
@@ -92,14 +123,21 @@ export class Pipeline {
     const aiReady = isAiReady(this.config);
     const wechatReady = Boolean(this.config.wechatAppId && this.config.wechatAppSecret);
     const mode = aiReady ? "live" : "demo";
+    const runStartedAt = new Date().toISOString();
+    logger.info("pipeline", `run ${runId} 开始`, { mode, wechatReady });
 
     try {
       await fs.mkdir(this.generatedDir, { recursive: true });
-      await this.updateRun(runId, { status: "running", mode: aiReady ? this.config.aiProvider || "openai" : mode });
+      await this.updateRun(runId, {
+        status: "running",
+        mode: aiReady ? this.config.aiProvider || "openai" : mode,
+        startedAt: runStartedAt,
+      });
 
       await this.updateStep(runId, "research", "running", aiReady ? "检索最近 7 天信号" : "使用内置演示选题");
       const topic = aiReady ? await chooseTopic(settings, this.config) : demoTopic(settings);
       await this.updateStep(runId, "research", "done", topic.title);
+      logger.info("pipeline", `选题完成：${topic.title}`, { runId });
 
       await this.updateStep(runId, "writing", "running", `目标约 ${settings.targetLength} 字`);
       let draft = aiReady ? await writeArticle(topic, settings, this.config) : demoArticle(topic, settings);
@@ -117,40 +155,72 @@ export class Pipeline {
       }
 
       const imageEngine = this.config.imageProvider === "codex" ? "ChatGPT 会员配图" : this.config.imageModel;
-      await this.updateStep(runId, "image", "running", aiReady ? imageEngine : "生成演示封面");
+      await this.updateStep(runId, "image", "running", aiReady ? imageEngine : "生成演示封面与插图");
       const extension = aiReady ? "png" : "svg";
       const coverFile = `${runId}.${extension}`;
       const coverPath = path.join(this.generatedDir, coverFile);
       if (aiReady) await generateCover(draft.imagePrompt, coverPath, this.config);
       else await fs.writeFile(coverPath, demoCoverSvg(draft.title), "utf8");
-      await this.updateStep(runId, "image", "done", coverFile);
+
+      const sectionPlaceholders = draft.sections.map((_, index) => `{{SECTION_IMAGE_${index}}}`);
+      const sectionFiles = [];
+      const sectionPaths = [];
+      for (let index = 0; index < draft.sections.length; index += 1) {
+        const file = `${runId}-s${index}.${extension}`;
+        const filePath = path.join(this.generatedDir, file);
+        const prompt = draft.sectionImages?.[index] || draft.imagePrompt;
+        if (aiReady) await generateImage(prompt, filePath, this.config);
+        else await fs.writeFile(filePath, demoSectionSvg(draft.sections[index]?.heading, index), "utf8");
+        sectionFiles.push(file);
+        sectionPaths.push(filePath);
+      }
+      await this.updateStep(
+        runId,
+        "image",
+        "done",
+        `${coverFile} + ${sectionPaths.length} 张小节插图`,
+      );
 
       const designTheme = selectDesignTheme(draft, topic, settings.designTheme);
       await this.updateStep(runId, "design", "running", `应用${designThemes[designTheme].name}`);
-      let html = buildWechatHtml(draft, topic, "{{BODY_IMAGE_URL}}", {
+      const html = buildWechatHtml(draft, topic, "{{BODY_IMAGE_URL}}", {
         designTheme,
         author: settings.author,
+        sectionUrls: sectionPlaceholders,
       });
-      let gzhValidation = await validateGzhHtml(html, this.config.rootDir);
+      const previewHtml = html
+        .replaceAll("{{BODY_IMAGE_URL}}", `/generated/${coverFile}`)
+        .replaceAll(/\{\{SECTION_IMAGE_(\d+)\}\}/g, (_, index) => `/generated/${sectionFiles[Number(index)]}`);
+      const gzhValidation = await validateGzhHtml(html, this.config.rootDir);
       await this.updateStep(
         runId,
         "design",
         "done",
         `${designThemes[designTheme].name} · ${gzhValidation.leafCount} 处文字兼容标记`,
       );
+
+      let finalHtml = html;
+      let finalValidation = gzhValidation;
       let wechatMediaId = null;
       let status = "local_preview";
 
       if (aiReady && wechatReady) {
         await this.updateStep(runId, "wechat", "running", "上传图片与封面素材");
         const accessToken = await getStableAccessToken(this.config);
-        const bodyImageUrl = await uploadArticleImage(accessToken, coverPath);
-        const thumbMediaId = await uploadPermanentCover(accessToken, coverPath);
-        html = buildWechatHtml(draft, topic, bodyImageUrl, { designTheme, author: settings.author });
-        gzhValidation = await validateGzhHtml(html, this.config.rootDir);
+        const heroUrl = await uploadArticleImage(accessToken, coverPath);
+        const sectionUrls = [];
+        for (const filePath of sectionPaths) {
+          sectionUrls.push(await uploadArticleImage(accessToken, filePath));
+        }
+        finalHtml = buildWechatHtml(draft, topic, heroUrl, {
+          designTheme,
+          author: settings.author,
+          sectionUrls,
+        });
+        finalValidation = await validateGzhHtml(finalHtml, this.config.rootDir);
         wechatMediaId = await addDraft(
           accessToken,
-          { ...draft, html, thumbMediaId },
+          { ...draft, html: finalHtml, thumbMediaId: await uploadPermanentCover(accessToken, coverPath) },
           settings,
         );
         status = "wechat_draft";
@@ -170,35 +240,53 @@ export class Pipeline {
         humanizer,
         designTheme,
         designThemeName: designThemes[designTheme].name,
-        gzhLeafCount: gzhValidation.leafCount,
-        html,
-        plainTextLength: plainTextLength(html),
+        gzhLeafCount: finalValidation.leafCount,
+        html: finalHtml,
+        previewHtml: status === "wechat_draft" ? finalHtml : previewHtml,
+        plainTextLength: plainTextLength(finalHtml),
         coverUrl: `/generated/${coverFile}`,
         coverPath,
+        sectionImagePaths: sectionPaths,
+        sectionImageCount: sectionPaths.length,
+        sectionImageFiles: sectionFiles,
         wechatMediaId,
         createdAt: new Date().toISOString(),
+        edited: false,
       };
+      const completedAt = new Date().toISOString();
+      const durationMs = Date.parse(completedAt) - Date.parse(runStartedAt);
       await this.store.update((state) => {
         state.articles.unshift(article);
         state.articles = state.articles.slice(0, 100);
         const run = state.runs.find((item) => item.id === runId);
         Object.assign(run, {
           status: "completed",
-          completedAt: new Date().toISOString(),
+          completedAt,
+          durationMs,
           articleId: article.id,
         });
       });
+      logger.info("pipeline", `run ${runId} 完成`, {
+        status,
+        durationMs,
+        leafCount: finalValidation.leafCount,
+        wechatMediaId,
+      });
       return article;
     } catch (error) {
+      const completedAt = new Date().toISOString();
+      const durationMs = Date.parse(completedAt) - Date.parse(runStartedAt);
       await this.updateRun(runId, {
         status: "failed",
-        completedAt: new Date().toISOString(),
+        completedAt,
+        durationMs,
         error: error.message,
       });
       const state = this.store.snapshot();
       const run = state.runs.find((item) => item.id === runId);
       const runningStep = run?.steps.find((item) => item.status === "running");
       if (runningStep) await this.updateStep(runId, runningStep.key, "failed", error.message);
+      logger.error("pipeline", `run ${runId} 失败`, { step: runningStep?.key, error: error.message });
       return null;
     }
   }
@@ -214,9 +302,14 @@ export class Pipeline {
       throw new Error("演示封面是 SVG；请接入内容引擎后重新生成 PNG 正式稿");
     }
     const accessToken = await getStableAccessToken(this.config);
-    const bodyImageUrl = await uploadArticleImage(accessToken, article.coverPath);
+    const heroUrl = await uploadArticleImage(accessToken, article.coverPath);
+    let html = article.html.replaceAll("{{BODY_IMAGE_URL}}", heroUrl);
+    const sectionPaths = article.sectionImagePaths || [];
+    for (let index = 0; index < sectionPaths.length; index += 1) {
+      const url = await uploadArticleImage(accessToken, sectionPaths[index]);
+      html = html.replaceAll(`{{SECTION_IMAGE_${index}}}`, url);
+    }
     const thumbMediaId = await uploadPermanentCover(accessToken, article.coverPath);
-    const html = article.html.replaceAll("{{BODY_IMAGE_URL}}", bodyImageUrl);
     await validateGzhHtml(html, this.config.rootDir);
     const mediaId = await addDraft(
       accessToken,
@@ -225,8 +318,9 @@ export class Pipeline {
     );
     await this.store.update((next) => {
       const saved = next.articles.find((item) => item.id === articleId);
-      Object.assign(saved, { status: "wechat_draft", html, wechatMediaId: mediaId });
+      Object.assign(saved, { status: "wechat_draft", html, previewHtml: html, wechatMediaId: mediaId });
     });
+    logger.info("pipeline", `文章 ${articleId} 已写入公众号草稿箱`, { mediaId });
     return { mediaId };
   }
 }

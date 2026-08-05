@@ -2,10 +2,13 @@ import "dotenv/config";
 import express from "express";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import { randomUUID } from "node:crypto";
 import { StateStore } from "./storage.js";
 import { Pipeline } from "./pipeline.js";
 import { isAiReady } from "./ai.js";
+import { plainTextLength } from "./article.js";
 import { checkCodexLogin } from "./codex.js";
+import { logger } from "./logger.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const rootDir = path.resolve(__dirname, "..");
@@ -76,7 +79,7 @@ app.get("/api/state", (_request, response) => {
 app.get("/source", (_request, response) => {
   response.type("text/plain").send(
     [
-      "墨流对应源代码位于：/Users/qcc/moli-wechat-agent",
+      `墨流对应源代码位于：${rootDir}`,
       "",
       "gzh-design-skill（AGPL-3.0-or-later）：",
       "https://github.com/isjiamu/gzh-design-skill",
@@ -108,6 +111,7 @@ const allowedSettings = new Set([
   "timezone",
   "allowComments",
   "fansOnlyComments",
+  "activeColumnId",
 ]);
 const allowedDesignThemes = new Set([
   "auto",
@@ -157,8 +161,90 @@ app.post("/api/articles/:id/push", async (request, response, next) => {
   }
 });
 
+const allowedArticleEdits = new Set(["title", "digest", "html", "author"]);
+
+app.patch("/api/articles/:id", async (request, response, next) => {
+  try {
+    const patch = Object.fromEntries(
+      Object.entries(request.body || {}).filter(([key]) => allowedArticleEdits.has(key)),
+    );
+    if (!Object.keys(patch).length) throw new Error("没有提供可编辑字段（title / digest / html / author）");
+    let updated = null;
+    await store.update((state) => {
+      const article = state.articles.find((item) => item.id === request.params.id);
+      if (!article) throw new Error("未找到这篇文章");
+      if (article.status === "wechat_draft") throw new Error("该草稿已写入公众号，编辑请回到公众号后台");
+      Object.assign(article, patch);
+      if (patch.html) {
+        article.previewHtml = patch.html;
+        article.plainTextLength = plainTextLength(patch.html);
+      }
+      article.edited = true;
+      updated = article;
+    });
+    logger.info("server", `草稿 ${request.params.id} 已编辑`, { fields: Object.keys(patch) });
+    response.json({ ok: true, article: updated });
+  } catch (error) {
+    next(error);
+  }
+});
+
+const columnFields = ["name", "theme", "audience", "tone", "author", "targetLength", "designTheme", "imageStyle"];
+const columnFieldSet = new Set(columnFields);
+
+app.put("/api/columns", async (request, response, next) => {
+  try {
+    const body = request.body || {};
+    const id = body.id?.trim();
+    const column = Object.fromEntries(
+      Object.entries(body).filter(([key]) => columnFieldSet.has(key) && String(body[key]).trim() !== ""),
+    );
+    if (!column.name?.trim()) throw new Error("栏目名称不能为空");
+    if (!column.theme?.trim()) throw new Error("栏目主题不能为空");
+    if (column.targetLength) column.targetLength = Math.min(5000, Math.max(600, Number(column.targetLength)));
+    if (column.designTheme && !allowedDesignThemes.has(column.designTheme)) throw new Error("未知的公众号排版主题");
+    let result = null;
+    await store.update((state) => {
+      const columns = state.settings.columns || (state.settings.columns = []);
+      const index = id ? columns.findIndex((item) => item.id === id) : -1;
+      if (index >= 0) {
+        Object.assign(columns[index], column, { id });
+        result = columns[index];
+      } else {
+        const created = { id: randomUUID(), ...column };
+        columns.push(created);
+        result = created;
+      }
+    });
+    response.json({ ok: true, column: result, columns: store.snapshot().settings.columns });
+  } catch (error) {
+    next(error);
+  }
+});
+
+app.post("/api/columns/:id/activate", async (request, response, next) => {
+  try {
+    const targetId = request.params.id;
+    let activated = null;
+    await store.update((state) => {
+      const column = (state.settings.columns || []).find((item) => item.id === targetId);
+      if (!column) throw new Error("未找到该栏目");
+      const editorial = ["theme", "audience", "tone", "author", "targetLength", "designTheme", "imageStyle"];
+      for (const key of editorial) {
+        if (column[key] !== undefined) state.settings[key] = column[key];
+      }
+      state.settings.activeColumnId = targetId;
+      activated = column;
+    });
+    logger.info("server", `切换到栏目 ${targetId}`, { name: activated.name });
+    response.json({ ok: true, column: activated, settings: store.snapshot().settings });
+  } catch (error) {
+    next(error);
+  }
+});
+
 app.use((error, _request, response, _next) => {
-  console.error(error);
+  logger.error("server", error.message, { stack: error.stack });
   response.status(400).json({ ok: false, error: error.message || "请求失败" });
 });
 
@@ -189,10 +275,10 @@ async function schedulerTick() {
   await pipeline.start("schedule");
 }
 
-setInterval(() => void schedulerTick().catch(console.error), 30_000).unref();
+setInterval(() => void schedulerTick().catch((error) => logger.error("scheduler", error.message)), 30_000).unref();
 
 const server = app.listen(config.port, config.host, () => {
-  console.log(`墨流已启动：${config.baseUrl}`);
+  logger.info("server", `墨流已启动：${config.baseUrl}`);
 });
 
 export { app, server, store, pipeline };

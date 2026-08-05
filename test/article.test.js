@@ -50,3 +50,34 @@ test("automatic theme selection follows the gzh topic mapping", () => {
   assert.equal(selectDesignTheme(article, { angle: "科技产品专业观点", keywords: [] }), "graphite-minimal");
   assert.equal(selectDesignTheme(article, { angle: "城市生活随笔", keywords: [] }), "zen-whitespace");
 });
+
+test("buildWechatHtml inserts one image per section from sectionUrls", () => {
+  const twoSectionArticle = {
+    title: "测试标题",
+    kicker: "栏目 · 观察",
+    lead: "导语。",
+    sections: [
+      { heading: "第一部分", paragraphs: ["正文一。"], callout: "判断一。" },
+      { heading: "第二部分", paragraphs: ["正文二。"], callout: "判断二。" },
+    ],
+    conclusion: "结论。",
+  };
+  const html = buildWechatHtml(
+    twoSectionArticle,
+    { sources: [] },
+    "https://mmbiz.qpic.cn/hero.png",
+    { sectionUrls: ["https://mmbiz.qpic.cn/s0.png", "https://mmbiz.qpic.cn/s1.png"] },
+  );
+  const images = [...html.matchAll(/<img[^>]+src="([^"]+)"/g)].map((match) => match[1]);
+  assert.equal(images.length, 3);
+  assert.ok(images.includes("https://mmbiz.qpic.cn/hero.png"));
+  assert.ok(images.includes("https://mmbiz.qpic.cn/s0.png"));
+  assert.ok(images.includes("https://mmbiz.qpic.cn/s1.png"));
+});
+
+test("buildWechatHtml uses placeholders when no sectionUrls provided", () => {
+  const html = buildWechatHtml(article, { sources: [] }, "{{BODY_IMAGE_URL}}", { sectionUrls: [] });
+  assert.match(html, /\{\{BODY_IMAGE_URL\}\}/);
+  assert.doesNotMatch(html, /\{\{SECTION_IMAGE_/);
+});
+
