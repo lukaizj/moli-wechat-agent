@@ -156,7 +156,7 @@ export class Pipeline {
         };
       } else {
         await this.updateStep(runId, "research", "running", aiReady ? "检索最近 7 天信号" : "使用内置演示选题");
-        topic = aiReady ? await chooseTopic(settings, this.config) : demoTopic(settings);
+        topic = aiReady ? await chooseTopic(settings, currentConfig) : demoTopic(settings);
         await this.updateStep(runId, "research", "done", topic.title);
       }
       logger.info("pipeline", `选题完成：${topic.title}`, { runId });
@@ -166,14 +166,14 @@ export class Pipeline {
         : `目标约 ${settings.targetLength} 字`;
       await this.updateStep(runId, "writing", "running", writingDetail);
       let draft = aiReady
-        ? await writeArticle(topic, settings, this.config, { referenceArticle: refArticle })
+        ? await writeArticle(topic, settings, currentConfig, { referenceArticle: refArticle })
         : demoArticle(topic, settings);
       await this.updateStep(runId, "writing", "done", draft.title);
 
       let humanizer = null;
       if (aiReady && settings.humanizeEnabled !== false) {
         await this.updateStep(runId, "humanize", "running", "按 Humanizer-zh 规则二次编辑");
-        const result = await humanizeArticle(draft, topic, settings, this.config);
+        const result = await humanizeArticle(draft, topic, settings, currentConfig);
         draft = result.draft;
         humanizer = result.score;
         await this.updateStep(runId, "humanize", "done", `自然度评分 ${humanizer.total}/50`);
@@ -182,14 +182,14 @@ export class Pipeline {
       }
 
       const userImages = Array.isArray(options.userImages) ? options.userImages.filter(Boolean) : [];
-      const currentImageProvider = settings.imageProvider || this.config.imageProvider || "codex";
+      const currentImageProvider = settings.imageProvider || currentConfig.imageProvider || "codex";
       const imageEngine = userImages.length > 0
         ? `使用 ${userImages.length} 张自定义排版图片`
         : currentImageProvider === "gemini" || currentImageProvider === "antigravity"
           ? "Antigravity / Gemini 配图"
           : currentImageProvider === "codex"
             ? "ChatGPT 会员配图"
-            : this.config.imageModel;
+            : currentConfig.imageModel;
 
       await this.updateStep(runId, "image", "running", aiReady || userImages.length > 0 ? imageEngine : "生成演示封面与插图");
       const extension = aiReady ? "png" : "svg";
@@ -202,7 +202,7 @@ export class Pipeline {
         coverPath = path.join(this.generatedDir, coverFile);
         await fs.copyFile(userImages[0], coverPath);
       } else if (aiReady) {
-        await generateCover(draft.imagePrompt, coverPath, this.config, settings);
+        await generateCover(draft.imagePrompt, coverPath, currentConfig, settings);
       } else {
         await fs.writeFile(coverPath, demoCoverSvg(draft.title), "utf8");
       }
@@ -221,7 +221,7 @@ export class Pipeline {
           await fs.copyFile(userSecImg, filePath);
         } else if (aiReady) {
           const prompt = draft.sectionImages?.[index] || draft.imagePrompt;
-          await generateImage(prompt, filePath, this.config, settings);
+          await generateImage(prompt, filePath, currentConfig, settings);
         } else {
           await fs.writeFile(filePath, demoSectionSvg(draft.sections[index]?.heading, index), "utf8");
         }

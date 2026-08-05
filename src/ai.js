@@ -245,6 +245,8 @@ export async function generateCover(prompt, outputPath, config, settings = {}) {
 
 export function isAiReady(config) {
   const textReady =
+    config.aiProvider === "gemini" ||
+    config.aiProvider === "antigravity" ||
     (config.aiProvider === "codex" && config.codexLoggedIn) ||
     (config.aiProvider === "deepseek" && config.deepseekApiKey) ||
     (config.aiProvider === "openai" && config.openaiApiKey);
