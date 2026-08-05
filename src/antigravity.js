@@ -45,7 +45,7 @@ export async function runAntigravityImage(prompt, outputPath, config = {}) {
   try {
     await runCommand(cmd, ["-y", "-p", systemPrompt], {
       cwd: config.rootDir || process.cwd(),
-      timeout: config.antigravityTimeoutMs || 5000,
+      timeout: config.antigravityTimeoutMs || 3000,
     });
     const exists = await fs
       .stat(outputPath)

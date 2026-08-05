@@ -196,21 +196,21 @@ export class Pipeline {
       let coverFile = `${runId}.${extension}`;
       let coverPath = path.join(this.generatedDir, coverFile);
 
-      if (userImages.length > 0 && userImages[0]) {
-        const ext = path.extname(userImages[0]) || ".png";
-        coverFile = `${runId}${ext}`;
-        coverPath = path.join(this.generatedDir, coverFile);
-        await fs.copyFile(userImages[0], coverPath);
-      } else if (aiReady) {
-        await generateCover(draft.imagePrompt, coverPath, currentConfig, settings);
-      } else {
-        await fs.writeFile(coverPath, demoCoverSvg(draft.title), "utf8");
-      }
+      const coverPromise = (async () => {
+        if (userImages.length > 0 && userImages[0]) {
+          const ext = path.extname(userImages[0]) || ".png";
+          coverFile = `${runId}${ext}`;
+          coverPath = path.join(this.generatedDir, coverFile);
+          await fs.copyFile(userImages[0], coverPath);
+        } else if (aiReady) {
+          await generateCover(draft.imagePrompt, coverPath, currentConfig, settings);
+        } else {
+          await fs.writeFile(coverPath, demoCoverSvg(draft.title), "utf8");
+        }
+      })();
 
       const sectionPlaceholders = draft.sections.map((_, index) => `{{SECTION_IMAGE_${index}}}`);
-      const sectionFiles = [];
-      const sectionPaths = [];
-      for (let index = 0; index < draft.sections.length; index += 1) {
+      const sectionTasks = draft.sections.map(async (_, index) => {
         const userSecImg = userImages[index + 1];
         let file = `${runId}-s${index}.${extension}`;
         let filePath = path.join(this.generatedDir, file);
@@ -225,9 +225,13 @@ export class Pipeline {
         } else {
           await fs.writeFile(filePath, demoSectionSvg(draft.sections[index]?.heading, index), "utf8");
         }
-        sectionFiles.push(file);
-        sectionPaths.push(filePath);
-      }
+        return { file, filePath };
+      });
+
+      await coverPromise;
+      const sectionResults = await Promise.all(sectionTasks);
+      const sectionFiles = sectionResults.map((r) => r.file);
+      const sectionPaths = sectionResults.map((r) => r.filePath);
       await this.updateStep(
         runId,
         "image",
