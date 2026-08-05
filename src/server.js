@@ -106,6 +106,7 @@ const allowedSettings = new Set([
   "referenceArticle",
   "humanizeEnabled",
   "designTheme",
+  "imageProvider",
   "imageStyle",
   "scheduleEnabled",
   "scheduleTime",
@@ -143,9 +144,40 @@ app.put("/api/settings", async (request, response, next) => {
   }
 });
 
+app.post("/api/upload-images", async (request, response, next) => {
+  try {
+    const { images } = request.body || {};
+    if (!Array.isArray(images) || !images.length) {
+      throw new Error("请提供需要上传的图片数据");
+    }
+    const uploadDir = path.join(dataDir, "generated", "user-uploads");
+    await fs.mkdir(uploadDir, { recursive: true });
+    const saved = [];
+    for (let i = 0; i < images.length; i += 1) {
+      const item = images[i];
+      const base64Data = typeof item === "string" ? item : item.data || "";
+      const cleanBase64 = base64Data.replace(/^data:image\/\w+;base64,/, "");
+      const name = typeof item === "object" && item ? item.name || "" : "";
+      const extMatch = name.match(/\.(png|jpg|jpeg|gif|webp)$/i);
+      const ext = extMatch ? extMatch[0].toLowerCase() : ".png";
+      const filename = `${Date.now()}-${i}${ext}`;
+      const filePath = path.join(uploadDir, filename);
+      await fs.writeFile(filePath, Buffer.from(cleanBase64, "base64"));
+      saved.push({
+        filename,
+        url: `/generated/user-uploads/${filename}`,
+        path: filePath,
+      });
+    }
+    response.json({ ok: true, files: saved });
+  } catch (error) {
+    next(error);
+  }
+});
+
 app.post("/api/runs", async (request, response, next) => {
   try {
-    const { columnId, referenceArticle, customTopic, trigger } = request.body || {};
+    const { columnId, referenceArticle, customTopic, userImages, trigger } = request.body || {};
     if (columnId) {
       await store.update((state) => {
         const target = state.settings.columns?.find((col) => col.id === columnId);
@@ -155,7 +187,7 @@ app.post("/api/runs", async (request, response, next) => {
         }
       });
     }
-    const run = await pipeline.start(trigger || "manual", { referenceArticle, customTopic });
+    const run = await pipeline.start(trigger || "manual", { referenceArticle, customTopic, userImages });
     response.status(202).json({ ok: true, run });
   } catch (error) {
     if (error.code === "RUN_ACTIVE") return response.status(409).json({ ok: false, error: error.message });

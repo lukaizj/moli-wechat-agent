@@ -197,8 +197,14 @@ export async function writeArticle(topic, settings, config, options = {}) {
   return response.output_parsed;
 }
 
-export async function generateImage(prompt, outputPath, config) {
-  if (config.imageProvider === "codex" || config.aiProvider === "codex") {
+import { runAntigravityImage } from "./antigravity.js";
+
+export async function generateImage(prompt, outputPath, config, settings = {}) {
+  const provider = settings.imageProvider || config.imageProvider || config.aiProvider || "openai";
+  if (provider === "gemini" || provider === "antigravity") {
+    return runAntigravityImage(prompt, outputPath, config);
+  }
+  if (provider === "codex") {
     return runCodexImage(prompt, outputPath, config);
   }
   const client = clientFor(config.openaiApiKey);
@@ -215,8 +221,8 @@ export async function generateImage(prompt, outputPath, config) {
   return outputPath;
 }
 
-export async function generateCover(prompt, outputPath, config) {
-  return generateImage(prompt, outputPath, config);
+export async function generateCover(prompt, outputPath, config, settings = {}) {
+  return generateImage(prompt, outputPath, config, settings);
 }
 
 export function isAiReady(config) {
@@ -225,6 +231,8 @@ export function isAiReady(config) {
     (config.aiProvider === "deepseek" && config.deepseekApiKey) ||
     (config.aiProvider === "openai" && config.openaiApiKey);
   const imageReady =
+    config.imageProvider === "gemini" ||
+    config.imageProvider === "antigravity" ||
     (config.imageProvider === "codex" && config.codexLoggedIn) ||
     (config.imageProvider === "openai" && config.openaiApiKey) ||
     (!config.imageProvider && textReady);

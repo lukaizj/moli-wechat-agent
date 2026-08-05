@@ -218,8 +218,12 @@
                   <option value="moyu-ticket">摸鱼票据风</option>
                   <option value="olive-journal">橄榄手记</option>
                 </select><small>自动模式会按文章题材选择主题。</small></label>
-                <label><span>Humanizer 去 AI 味</span><div class="schedule-input"><small>成稿后按 Humanizer-zh 规则复核</small><label class="switch"><input name="humanizeEnabled" type="checkbox" /><span></span></label></div></label>
+                <label><span>生图引擎</span><select name="imageProvider">
+                  <option value="codex">GPT (ChatGPT 会员 / OpenAI)</option>
+                  <option value="gemini">Gemini (Antigravity 生图)</option>
+                </select><small>选择使用 GPT 还是 Gemini 生图</small></label>
               </div>
+              <label><span>Humanizer 去 AI 味</span><div class="schedule-input"><small>成稿后按 Humanizer-zh 规则复核</small><label class="switch"><input name="humanizeEnabled" type="checkbox" /><span></span></label></div></label>
               <label><span>配图风格</span><textarea name="imageStyle" rows="3" required></textarea></label>
               <div class="form-footer">
                 <p>保存后，下一次运行立即使用新设定。</p>
@@ -245,15 +249,21 @@
                 <label><span>署名</span><input name="author" /></label>
                 <label><span>目标篇幅</span><div class="suffix-input"><input name="targetLength" type="number" min="600" max="5000" /><em>字</em></div></label>
               </div>
-              <label><span>排版主题</span><select name="designTheme">
-                <option value="auto">自动匹配</option>
-                <option value="moyu-green">摸鱼绿</option>
-                <option value="red-white">红白色系</option>
-                <option value="graphite-minimal">石墨极简风</option>
-                <option value="zen-whitespace">留白禅意风</option>
-                <option value="moyu-ticket">摸鱼票据风</option>
-                <option value="olive-journal">橄榄手记</option>
-              </select></label>
+              <div class="field-row two-columns">
+                <label><span>排版主题</span><select name="designTheme">
+                  <option value="auto">自动匹配</option>
+                  <option value="moyu-green">摸鱼绿</option>
+                  <option value="red-white">红白色系</option>
+                  <option value="graphite-minimal">石墨极简风</option>
+                  <option value="zen-whitespace">留白禅意风</option>
+                  <option value="moyu-ticket">摸鱼票据风</option>
+                  <option value="olive-journal">橄榄手记</option>
+                </select></label>
+                <label><span>生图引擎</span><select name="imageProvider">
+                  <option value="codex">GPT (ChatGPT 会员 / OpenAI)</option>
+                  <option value="gemini">Gemini (Antigravity 生图)</option>
+                </select></label>
+              </div>
               <label><span>配图风格</span><textarea name="imageStyle" rows="2"></textarea></label>
               <div class="form-footer">
                 <p id="column-form-hint">新增一个栏目</p>
@@ -277,10 +287,16 @@
         <div class="modal-body">
           <p class="modal-intro">粘贴爆款或目标公众号推文正文，Agent 将深度提炼其开篇 hook、段落节奏、叙事套路与金句惯例，模仿生成新推文并自动推送至草稿箱。</p>
           <label><span>参考推文内容 / 范文正文</span>
-            <textarea id="imitate-reference-input" rows="8" placeholder="在此粘贴你想要 Agent 模仿的参考公众号推文正文..."></textarea>
+            <textarea id="imitate-reference-input" rows="7" placeholder="在此粘贴你想要 Agent 模仿的参考公众号推文正文..."></textarea>
           </label>
           <label><span>指定新选题 / 切入角度（可选）</span>
             <input id="imitate-topic-input" placeholder="留空则自动结合 7 天最新有效信号或范文主题提炼新选题" />
+          </label>
+          <label><span>上传自定义排版图片（选填）</span>
+            <input type="file" id="imitate-image-input" accept="image/*" multiple class="hidden" />
+            <button type="button" class="secondary-button" id="imitate-image-select">选择图片文件</button>
+            <div id="imitate-image-preview" class="upload-preview-grid"></div>
+            <small>第 1 张图片作主封面，其余图片自动分配至各小节正文。</small>
           </label>
         </div>
         <div class="modal-footer">

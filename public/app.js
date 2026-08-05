@@ -383,7 +383,58 @@ function resetColumnForm() {
   $("#column-form-hint").textContent = "新增一个栏目";
 }
 
+let uploadedImagePaths = [];
+
+function renderImagePreviews() {
+  const container = $("#imitate-image-preview");
+  if (!container) return;
+  container.innerHTML = uploadedImagePaths
+    .map(
+      (item, idx) => `<div class="preview-thumb-item">
+        <img src="${item.url}" alt="" />
+        <span class="thumb-label">${idx === 0 ? "主封面" : `小节 ${idx}`}</span>
+        <button type="button" class="thumb-remove" data-idx="${idx}">✕</button>
+      </div>`,
+    )
+    .join("");
+  $$(".thumb-remove", container).forEach((btn) =>
+    btn.addEventListener("click", (e) => {
+      e.stopPropagation();
+      const idx = Number(btn.dataset.idx);
+      uploadedImagePaths.splice(idx, 1);
+      renderImagePreviews();
+    }),
+  );
+}
+
+async function handleImageSelect(event) {
+  const files = [...(event.target.files || [])];
+  if (!files.length) return;
+  const readBase64 = (file) =>
+    new Promise((resolve) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve({ data: reader.result, name: file.name });
+      reader.readAsDataURL(file);
+    });
+  try {
+    const images = await Promise.all(files.map(readBase64));
+    const res = await api("/api/upload-images", {
+      method: "POST",
+      body: JSON.stringify({ images }),
+    });
+    uploadedImagePaths.push(...(res.files || []));
+    renderImagePreviews();
+    toast(`已成功上传 ${res.files.length} 张自定义排版图片`);
+  } catch (error) {
+    toast(error.message, true);
+  } finally {
+    event.target.value = "";
+  }
+}
+
 function openImitateModal() {
+  uploadedImagePaths = [];
+  renderImagePreviews();
   $("#imitate-reference-input").value = "";
   $("#imitate-topic-input").value = "";
   $("#imitate-modal").classList.remove("hidden");
@@ -396,8 +447,8 @@ function closeImitateModal() {
 async function startImitationRun() {
   const referenceArticle = $("#imitate-reference-input").value.trim();
   const customTopic = $("#imitate-topic-input").value.trim();
-  if (!referenceArticle && !customTopic) {
-    toast("请粘贴参考推文正文或填写指定选题", true);
+  if (!referenceArticle && !customTopic && !uploadedImagePaths.length) {
+    toast("请粘贴参考推文、填写选题或上传自定义图片", true);
     return;
   }
   const button = $("#imitate-run-button");
@@ -406,9 +457,14 @@ async function startImitationRun() {
   try {
     await api("/api/runs", {
       method: "POST",
-      body: JSON.stringify({ referenceArticle, customTopic, trigger: "manual" }),
+      body: JSON.stringify({
+        referenceArticle,
+        customTopic,
+        userImages: uploadedImagePaths.map((item) => item.path),
+        trigger: "manual",
+      }),
     });
-    toast("已开始根据范文进行仿写，可在界面查看流程动态");
+    toast("已开始运行排版生成，可在界面查看流程动态");
     closeImitateModal();
     await loadState();
   } catch (error) {
@@ -419,6 +475,8 @@ async function startImitationRun() {
   }
 }
 
+$("#imitate-image-select").addEventListener("click", () => $("#imitate-image-input").click());
+$("#imitate-image-input").addEventListener("change", handleImageSelect);
 $("#imitate-modal-open-button").addEventListener("click", openImitateModal);
 $("#imitate-modal-close").addEventListener("click", closeImitateModal);
 $("#imitate-cancel-button").addEventListener("click", closeImitateModal);

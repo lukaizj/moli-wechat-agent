@@ -176,23 +176,50 @@ export class Pipeline {
         await this.updateStep(runId, "humanize", "skipped", aiReady ? "已在设定中关闭" : "演示模式跳过模型复核");
       }
 
-      const imageEngine = this.config.imageProvider === "codex" ? "ChatGPT 会员配图" : this.config.imageModel;
-      await this.updateStep(runId, "image", "running", aiReady ? imageEngine : "生成演示封面与插图");
+      const userImages = Array.isArray(options.userImages) ? options.userImages.filter(Boolean) : [];
+      const currentImageProvider = settings.imageProvider || this.config.imageProvider || "codex";
+      const imageEngine = userImages.length > 0
+        ? `使用 ${userImages.length} 张自定义排版图片`
+        : currentImageProvider === "gemini" || currentImageProvider === "antigravity"
+          ? "Antigravity / Gemini 配图"
+          : currentImageProvider === "codex"
+            ? "ChatGPT 会员配图"
+            : this.config.imageModel;
+
+      await this.updateStep(runId, "image", "running", aiReady || userImages.length > 0 ? imageEngine : "生成演示封面与插图");
       const extension = aiReady ? "png" : "svg";
-      const coverFile = `${runId}.${extension}`;
-      const coverPath = path.join(this.generatedDir, coverFile);
-      if (aiReady) await generateCover(draft.imagePrompt, coverPath, this.config);
-      else await fs.writeFile(coverPath, demoCoverSvg(draft.title), "utf8");
+      let coverFile = `${runId}.${extension}`;
+      let coverPath = path.join(this.generatedDir, coverFile);
+
+      if (userImages.length > 0 && userImages[0]) {
+        const ext = path.extname(userImages[0]) || ".png";
+        coverFile = `${runId}${ext}`;
+        coverPath = path.join(this.generatedDir, coverFile);
+        await fs.copyFile(userImages[0], coverPath);
+      } else if (aiReady) {
+        await generateCover(draft.imagePrompt, coverPath, this.config, settings);
+      } else {
+        await fs.writeFile(coverPath, demoCoverSvg(draft.title), "utf8");
+      }
 
       const sectionPlaceholders = draft.sections.map((_, index) => `{{SECTION_IMAGE_${index}}}`);
       const sectionFiles = [];
       const sectionPaths = [];
       for (let index = 0; index < draft.sections.length; index += 1) {
-        const file = `${runId}-s${index}.${extension}`;
-        const filePath = path.join(this.generatedDir, file);
-        const prompt = draft.sectionImages?.[index] || draft.imagePrompt;
-        if (aiReady) await generateImage(prompt, filePath, this.config);
-        else await fs.writeFile(filePath, demoSectionSvg(draft.sections[index]?.heading, index), "utf8");
+        const userSecImg = userImages[index + 1];
+        let file = `${runId}-s${index}.${extension}`;
+        let filePath = path.join(this.generatedDir, file);
+        if (userSecImg) {
+          const ext = path.extname(userSecImg) || ".png";
+          file = `${runId}-s${index}${ext}`;
+          filePath = path.join(this.generatedDir, file);
+          await fs.copyFile(userSecImg, filePath);
+        } else if (aiReady) {
+          const prompt = draft.sectionImages?.[index] || draft.imagePrompt;
+          await generateImage(prompt, filePath, this.config, settings);
+        } else {
+          await fs.writeFile(filePath, demoSectionSvg(draft.sections[index]?.heading, index), "utf8");
+        }
         sectionFiles.push(file);
         sectionPaths.push(filePath);
       }

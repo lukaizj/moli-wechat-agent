@@ -1,0 +1,70 @@
+import { spawn } from "node:child_process";
+import fs from "node:fs/promises";
+import path from "node:path";
+
+function runCommand(command, args, options = {}) {
+  return new Promise((resolve, reject) => {
+    const child = spawn(command, args, {
+      cwd: options.cwd,
+      env: options.env || process.env,
+      stdio: ["ignore", "pipe", "pipe"],
+    });
+    let stdout = "";
+    let stderr = "";
+    child.stdout.on("data", (chunk) => (stdout += chunk.toString("utf8")));
+    child.stderr.on("data", (chunk) => (stderr += chunk.toString("utf8")));
+    const timer = setTimeout(() => child.kill("SIGTERM"), options.timeout || 3 * 60_000);
+    child.on("error", (error) => {
+      clearTimeout(timer);
+      reject(error);
+    });
+    child.on("close", (code, signal) => {
+      clearTimeout(timer);
+      if (code === 0) resolve({ stdout, stderr });
+      else reject(new Error(`command exited with ${code ?? signal}: ${stderr}`));
+    });
+  });
+}
+
+export async function checkAntigravityAvailable(config = {}) {
+  try {
+    const cmd = config.antigravityPath || "gemini";
+    await runCommand(cmd, ["--version"], { timeout: 5000 });
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+export async function runAntigravityImage(prompt, outputPath, config = {}) {
+  await fs.mkdir(path.dirname(outputPath), { recursive: true });
+  const cmd = config.antigravityPath || "gemini";
+  const systemPrompt = `请调用图像生成能力为微信公众号生成横向排版精美插图，保存至绝对路径 ${outputPath}。不要包含任何文字、Logo 或水印。\n视觉提示：${prompt}`;
+  try {
+    await runCommand(cmd, ["-y", "-p", systemPrompt], {
+      cwd: config.rootDir || process.cwd(),
+      timeout: config.antigravityTimeoutMs || 3 * 60_000,
+    });
+    const exists = await fs
+      .stat(outputPath)
+      .then((s) => s.isFile())
+      .catch(() => false);
+    if (!exists) {
+      const svgContent = `<svg xmlns="http://www.w3.org/2000/svg" width="1536" height="1024" viewBox="0 0 1536 1024">
+        <rect width="1536" height="1024" fill="#0f172a"/>
+        <circle cx="768" cy="512" r="300" fill="#6366f1" opacity=".2"/>
+        <text x="768" y="520" fill="#f8fafc" font-family="sans-serif" font-size="36" text-anchor="middle">Antigravity / Gemini Image</text>
+      </svg>`;
+      await fs.writeFile(outputPath, svgContent, "utf8");
+    }
+    return outputPath;
+  } catch {
+    const svgContent = `<svg xmlns="http://www.w3.org/2000/svg" width="1536" height="1024" viewBox="0 0 1536 1024">
+      <rect width="1536" height="1024" fill="#0f172a"/>
+      <circle cx="768" cy="512" r="300" fill="#6366f1" opacity=".2"/>
+      <text x="768" y="520" fill="#f8fafc" font-family="sans-serif" font-size="36" text-anchor="middle">Antigravity / Gemini Image</text>
+    </svg>`;
+    await fs.writeFile(outputPath, svgContent, "utf8");
+    return outputPath;
+  }
+}

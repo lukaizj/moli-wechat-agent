@@ -62,3 +62,35 @@ test("pipeline accepts referenceArticle and customTopic options for imitation mo
   assert.equal(article.isImitation, true);
   await fs.rm(directory, { recursive: true, force: true });
 });
+
+test("pipeline incorporates userImages into cover and section layout", async () => {
+  const directory = await fs.mkdtemp(path.join(os.tmpdir(), "moli-user-img-"));
+  const img1 = path.join(directory, "img1.png");
+  const img2 = path.join(directory, "img2.png");
+  await fs.writeFile(img1, "fake-image-1", "utf8");
+  await fs.writeFile(img2, "fake-image-2", "utf8");
+
+  const store = new StateStore(path.join(directory, "state.json"));
+  await store.init();
+  const pipeline = new Pipeline({
+    store,
+    generatedDir: path.join(directory, "generated"),
+    config: { openaiApiKey: "", wechatAppId: "", wechatAppSecret: "" },
+  });
+
+  const run = await pipeline.start("manual", {
+    userImages: [img1, img2],
+  });
+
+  for (let attempt = 0; attempt < 100; attempt += 1) {
+    const current = store.snapshot().runs.find((item) => item.id === run.id);
+    if (["completed", "failed"].includes(current.status)) break;
+    await new Promise((resolve) => setTimeout(resolve, 20));
+  }
+
+  const state = store.snapshot();
+  const article = state.articles[0];
+  assert.equal(await fs.readFile(article.coverPath, "utf8"), "fake-image-1");
+  assert.equal(await fs.readFile(article.sectionImagePaths[0], "utf8"), "fake-image-2");
+  await fs.rm(directory, { recursive: true, force: true });
+});
