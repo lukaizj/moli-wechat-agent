@@ -344,16 +344,7 @@ app.post("/api/articles/:id/sync-metrics", async (request, response, next) => {
           synced = true;
         }
       } catch (err) {
-        logger.warn("wechat", `从微信同步数据失败: ${err.message}`);
-        if (err.message.includes("48001")) {
-          return response.json({
-            ok: true,
-            metrics,
-            synced: false,
-            unauthorized: true,
-            errorMsg: "当前公众号未获得微信数据接口权限（48001），你可以直接手动输入数据",
-          });
-        }
+        logger.warn("wechat", `从微信同步数据受限: ${err.message}`);
       }
     }
 

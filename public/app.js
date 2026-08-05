@@ -299,6 +299,13 @@ function renderRetrospectiveArticleSelect() {
   if (currentVal && articles.some((a) => a.id === currentVal)) {
     select.value = currentVal;
   }
+  const selectedArticle = articles.find((a) => a.id === select.value) || articles[0];
+  if (selectedArticle) {
+    populateRetrospectiveForm(selectedArticle);
+    if (selectedArticle.retrospective) {
+      renderRetrospectiveReport(selectedArticle.retrospective, selectedArticle.title);
+    }
+  }
 }
 
 function renderRetrospectiveReport(report, title = "") {
@@ -335,10 +342,10 @@ function populateRetrospectiveForm(article, metrics) {
   form.elements.likes.value = m.likes !== undefined && m.likes !== null ? m.likes : 0;
   form.elements.looking.value = m.looking !== undefined && m.looking !== null ? m.looking : 0;
   form.elements.shares.value = m.shares !== undefined && m.shares !== null ? m.shares : 0;
-  if (article?.feedback) form.elements.feedback.value = article.feedback;
+  form.elements.feedback.value = article?.feedback || "";
 }
 
-async function syncArticleMetrics(articleId) {
+async function syncArticleMetrics(articleId, showSuccessToast = false) {
   if (!articleId) return;
   const article = state.articles?.find((a) => a.id === articleId);
   if (article) populateRetrospectiveForm(article);
@@ -352,18 +359,16 @@ async function syncArticleMetrics(articleId) {
     const res = await api(`/api/articles/${articleId}/sync-metrics`, { method: "POST", body: "{}" });
     if (res.synced && res.metrics) {
       populateRetrospectiveForm(article, res.metrics);
-      toast("已成功从微信公众号同步最新线上统计数据");
-    } else if (res.unauthorized) {
-      toast(res.errorMsg || "当前公众号为未认证个人号，微信未开放 DataCube 统计接口，可直接手动输入数据", true);
-    } else {
-      toast("未在微信最近统计数据中找到该文章，你可以直接在下方框中手动输入数据");
+      if (showSuccessToast) toast("已成功从微信公众号实时同步最新数据");
+    } else if (showSuccessToast) {
+      toast("已从本地数据库加载当前推文追踪面板，可在此调整指标或录入读者反馈");
     }
   } catch (error) {
-    toast(error.message, true);
+    if (showSuccessToast) toast(error.message, true);
   } finally {
     if (syncBtn) {
       syncBtn.disabled = false;
-      syncBtn.textContent = "🔄 同步公众号最新数据";
+      syncBtn.textContent = "🔄 同步公众号数据";
     }
   }
 }
@@ -647,27 +652,21 @@ $("#rules-list")?.addEventListener("click", (e) => {
 $("#sync-metrics-btn")?.addEventListener("click", () => {
   const articleId = $("#retro-article-select")?.value;
   if (!articleId) return toast("请选择要同步的推文", true);
-  syncArticleMetrics(articleId);
+  syncArticleMetrics(articleId, true);
 });
 $("#retro-article-select")?.addEventListener("change", (e) => {
   const articleId = e.target.value;
   if (!articleId) return;
   const article = state.articles?.find((a) => a.id === articleId);
-  if (article && article.metrics) {
-    const form = $("#retrospective-form");
-    if (form) {
-      form.elements.reads.value = article.metrics.reads || 0;
-      form.elements.likes.value = article.metrics.likes || 0;
-      form.elements.looking.value = article.metrics.looking || 0;
-      form.elements.shares.value = article.metrics.shares || 0;
+  if (article) {
+    populateRetrospectiveForm(article);
+    if (article.retrospective) {
+      renderRetrospectiveReport(article.retrospective, article.title);
+    } else {
+      renderRetrospectiveReport(null);
     }
   }
-  if (article && article.retrospective) {
-    renderRetrospectiveReport(article.retrospective, article.title);
-  } else {
-    renderRetrospectiveReport(null);
-  }
-  syncArticleMetrics(articleId);
+  syncArticleMetrics(articleId, false);
 });
 
 await loadState();
