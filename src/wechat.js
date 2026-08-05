@@ -82,3 +82,16 @@ export async function addDraft(accessToken, article, settings, fetchImpl = fetch
   if (!payload.media_id) throw new Error("写入公众号草稿箱失败：响应缺少 media_id");
   return payload.media_id;
 }
+
+export async function getArticleTotalData(accessToken, beginDate, endDate, fetchImpl = fetch) {
+  const response = await fetchImpl(
+    `https://api.weixin.qq.com/datacube/getarticletotal?access_token=${encodeURIComponent(accessToken)}`,
+    {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ begin_date: beginDate, end_date: endDate }),
+    },
+  );
+  const payload = await parseResponse(response, "获取公众号文章数据");
+  return payload.list || [];
+}

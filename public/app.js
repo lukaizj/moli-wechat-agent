@@ -327,6 +327,33 @@ function renderRetrospectiveReport(report, title = "") {
   `;
 }
 
+async function syncArticleMetrics(articleId) {
+  if (!articleId) return;
+  const syncBtn = $("#sync-metrics-btn");
+  if (syncBtn) {
+    syncBtn.disabled = true;
+    syncBtn.textContent = "同步中…";
+  }
+  try {
+    const res = await api(`/api/articles/${articleId}/sync-metrics`, { method: "POST", body: "{}" });
+    const form = $("#retrospective-form");
+    if (form && res.metrics) {
+      form.elements.reads.value = res.metrics.reads || 0;
+      form.elements.likes.value = res.metrics.likes || 0;
+      form.elements.looking.value = res.metrics.looking || 0;
+      form.elements.shares.value = res.metrics.shares || 0;
+    }
+    toast(res.synced ? "已成功从公众号同步该文章最新统计数据" : "已加载当前本地保存的数据（填入 AppID / Secret 可同步公众号实时数据）");
+  } catch (error) {
+    toast(error.message, true);
+  } finally {
+    if (syncBtn) {
+      syncBtn.disabled = false;
+      syncBtn.textContent = "🔄 同步公众号最新数据";
+    }
+  }
+}
+
 async function handleRetrospectiveSubmit(event) {
   event.preventDefault();
   const form = event.currentTarget;
@@ -603,14 +630,30 @@ $("#rules-list")?.addEventListener("click", (e) => {
     handleDeleteEvolutionRule(index);
   }
 });
+$("#sync-metrics-btn")?.addEventListener("click", () => {
+  const articleId = $("#retro-article-select")?.value;
+  if (!articleId) return toast("请选择要同步的推文", true);
+  syncArticleMetrics(articleId);
+});
 $("#retro-article-select")?.addEventListener("change", (e) => {
   const articleId = e.target.value;
+  if (!articleId) return;
   const article = state.articles?.find((a) => a.id === articleId);
+  if (article && article.metrics) {
+    const form = $("#retrospective-form");
+    if (form) {
+      form.elements.reads.value = article.metrics.reads || 0;
+      form.elements.likes.value = article.metrics.likes || 0;
+      form.elements.looking.value = article.metrics.looking || 0;
+      form.elements.shares.value = article.metrics.shares || 0;
+    }
+  }
   if (article && article.retrospective) {
     renderRetrospectiveReport(article.retrospective, article.title);
   } else {
     renderRetrospectiveReport(null);
   }
+  syncArticleMetrics(articleId);
 });
 
 await loadState();

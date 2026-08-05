@@ -9,6 +9,7 @@ import { isAiReady } from "./ai.js";
 import { plainTextLength } from "./article.js";
 import { checkCodexLogin } from "./codex.js";
 import { analyzeArticlePerformance } from "./retrospective.js";
+import { getStableAccessToken, getArticleTotalData } from "./wechat.js";
 import { logger } from "./logger.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -301,6 +302,53 @@ app.post("/api/articles/:id/retrospective", async (request, response, next) => {
     });
 
     response.json({ ok: true, report, evolutionRules: store.snapshot().settings.evolutionRules || [] });
+  } catch (error) {
+    next(error);
+  }
+});
+
+app.post("/api/articles/:id/sync-metrics", async (request, response, next) => {
+  try {
+    const { id } = request.params;
+    const state = store.snapshot();
+    const article = state.articles.find((item) => item.id === id);
+    if (!article) throw new Error("未找到对应文章记录");
+
+    let metrics = article.metrics || { reads: 0, likes: 0, looking: 0, shares: 0 };
+    let synced = false;
+
+    if (config.wechatAppId && config.wechatAppSecret) {
+      try {
+        const accessToken = await getStableAccessToken(config);
+        const today = new Date();
+        const endDate = today.toISOString().slice(0, 10);
+        const past = new Date(today.getTime() - 7 * 24 * 3600 * 1000);
+        const beginDate = past.toISOString().slice(0, 10);
+        const list = await getArticleTotalData(accessToken, beginDate, endDate);
+        const matched = list.find((item) => item.title === article.title || item.title?.includes(article.title));
+        if (matched && matched.details && matched.details.length > 0) {
+          const detail = matched.details[matched.details.length - 1];
+          metrics = {
+            reads: detail.int_page_read_user || detail.target_user || metrics.reads || 0,
+            likes: detail.like_num || metrics.likes || 0,
+            looking: detail.add_to_fav_user || metrics.looking || 0,
+            shares: detail.share_user || metrics.shares || 0,
+          };
+          synced = true;
+        }
+      } catch (err) {
+        logger.warn("wechat", `从微信同步数据失败: ${err.message}`);
+      }
+    }
+
+    if (synced) {
+      await store.update((draftState) => {
+        const target = draftState.articles.find((item) => item.id === id);
+        if (target) target.metrics = metrics;
+      });
+    }
+
+    response.json({ ok: true, metrics, synced });
   } catch (error) {
     next(error);
   }
