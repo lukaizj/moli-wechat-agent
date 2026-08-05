@@ -27,7 +27,14 @@ async function api(url, options = {}) {
     ...options,
     headers: { "content-type": "application/json", ...(options.headers || {}) },
   });
-  const payload = await response.json();
+  const contentType = response.headers.get("content-type") || "";
+  let payload = {};
+  if (contentType.includes("application/json")) {
+    payload = await response.json();
+  } else {
+    const text = await response.text();
+    throw new Error(`服务未能识别该请求 (${response.status})，请重启服务后重试。`);
+  }
   if (!response.ok || payload.ok === false) throw new Error(payload.error || "请求失败");
   return payload;
 }
