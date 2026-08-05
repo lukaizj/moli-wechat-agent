@@ -205,6 +205,29 @@ app.post("/api/upload-images", async (request, response, next) => {
   }
 });
 
+app.post("/api/runs/cancel", async (request, response, next) => {
+  try {
+    const { runId } = request.body || {};
+    const success = await pipeline.cancel(runId);
+    response.json({ ok: true, cancelled: success });
+  } catch (error) {
+    next(error);
+  }
+});
+
+app.post("/api/runs/restart", async (request, response, next) => {
+  try {
+    if (pipeline.activeRunId) {
+      await pipeline.cancel(pipeline.activeRunId);
+    }
+    const { columnId, referenceArticle, customTopic, userImages, trigger } = request.body || {};
+    const run = await pipeline.start(trigger || "restart", { referenceArticle, customTopic, userImages });
+    response.status(202).json({ ok: true, run });
+  } catch (error) {
+    next(error);
+  }
+});
+
 app.post("/api/runs", async (request, response, next) => {
   try {
     const { columnId, referenceArticle, customTopic, userImages, trigger } = request.body || {};

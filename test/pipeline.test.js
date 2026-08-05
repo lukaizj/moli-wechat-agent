@@ -94,3 +94,24 @@ test("pipeline incorporates userImages into cover and section layout", async () 
   assert.equal(await fs.readFile(article.sectionImagePaths[0], "utf8"), "fake-image-2");
   await fs.rm(directory, { recursive: true, force: true });
 });
+
+test("pipeline supports manual cancellation of active run", async () => {
+  const directory = await fs.mkdtemp(path.join(os.tmpdir(), "moli-cancel-"));
+  const store = new StateStore(path.join(directory, "state.json"));
+  await store.init();
+  const pipeline = new Pipeline({
+    store,
+    generatedDir: path.join(directory, "generated"),
+    config: { openaiApiKey: "", wechatAppId: "", wechatAppSecret: "" },
+  });
+
+  const run = await pipeline.start("manual");
+  const cancelled = await pipeline.cancel(run.id);
+  assert.equal(cancelled, true);
+
+  const state = store.snapshot();
+  const current = state.runs.find((item) => item.id === run.id);
+  assert.equal(current.status, "cancelled");
+  assert.equal(pipeline.activeRunId, null);
+  await fs.rm(directory, { recursive: true, force: true });
+});

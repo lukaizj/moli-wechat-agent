@@ -39,6 +39,7 @@
           </div>
           <div class="top-actions">
             <span class="agent-status"><i></i><span id="agent-status-text">Agent 待命</span></span>
+            <button class="icon-button hidden danger-text" id="top-cancel-button" title="中断当前运行" aria-label="中断当前运行">⏹</button>
             <button class="icon-button" id="refresh-button" aria-label="刷新">↻</button>
           </div>
         </header>
@@ -51,10 +52,18 @@
                 <h2>从一个主题，<br />走到一篇待审草稿。</h2>
                 <p>Agent 会研究最近变化，自主选题、成稿，经 Humanizer 二次编辑和公众号主题排版后送进草稿箱。</p>
                 <div class="theme-pill"><span>当前主题</span><strong id="theme-summary">—</strong></div>
-                <button class="primary-button" id="run-button">
-                  <span class="button-symbol">↗</span>
-                  <span><strong>生成今日文章</strong><small>预计 2–5 分钟</small></span>
-                </button>
+                <div class="action-buttons-group">
+                  <button class="primary-button" id="run-button">
+                    <span class="button-symbol">↗</span>
+                    <span><strong>生成今日文章</strong><small>预计 2–5 分钟</small></span>
+                  </button>
+                  <button class="danger-button hidden" id="cancel-button">
+                    <span>⏹ <strong>中断运行</strong></span>
+                  </button>
+                  <button class="secondary-button" id="restart-button">
+                    <span>🔄 <strong>重新生成</strong></span>
+                  </button>
+                </div>
                 <button class="secondary-button imitate-trigger-button" id="imitate-modal-open-button" style="margin-top: 10px; width: 100%;">
                   <span>✦ <strong>模仿推文生成</strong><small>粘贴范文并可选指定新选题</small></span>
                 </button>

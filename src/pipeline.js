@@ -77,6 +77,33 @@ export class Pipeline {
     this.activeRunId = null;
   }
 
+  async cancel(runId) {
+    const targetId = runId || this.activeRunId;
+    if (!targetId) return false;
+    const now = new Date().toISOString();
+    let cancelledRun = null;
+    await this.store.update((state) => {
+      const run = state.runs.find((item) => item.id === targetId);
+      if (!run || run.status === "completed" || run.status === "failed" || run.status === "cancelled") return;
+      run.status = "cancelled";
+      run.completedAt = now;
+      run.error = "用户手动中断运行";
+      run.steps.forEach((step) => {
+        if (step.status === "running") {
+          step.status = "failed";
+          step.detail = "已手动取消";
+          step.completedAt = now;
+        }
+      });
+      cancelledRun = run;
+    });
+    if (this.activeRunId === targetId) {
+      this.activeRunId = null;
+    }
+    logger.info("pipeline", `run ${targetId} 已手动中断`, { cancelledRun });
+    return Boolean(cancelledRun);
+  }
+
   async start(trigger = "manual", options = {}) {
     if (this.activeRunId) {
       const error = new Error("已有一篇文章正在生成，请稍后查看进度");
@@ -92,7 +119,9 @@ export class Pipeline {
       state.runs = state.runs.slice(0, 30);
     });
     void this.execute(run.id, options).finally(() => {
-      this.activeRunId = null;
+      if (this.activeRunId === run.id) {
+        this.activeRunId = null;
+      }
     });
     return run;
   }
@@ -100,7 +129,7 @@ export class Pipeline {
   async updateRun(runId, update) {
     await this.store.update((state) => {
       const run = state.runs.find((item) => item.id === runId);
-      if (!run) return;
+      if (!run || run.status === "cancelled") return;
       Object.assign(run, update);
     });
   }
@@ -109,6 +138,7 @@ export class Pipeline {
     const now = new Date().toISOString();
     await this.store.update((state) => {
       const run = state.runs.find((item) => item.id === runId);
+      if (!run || run.status === "cancelled") return;
       const step = run?.steps.find((item) => item.key === key);
       if (!step) return;
       if (status === "running" && !step.startedAt) step.startedAt = now;
@@ -118,6 +148,11 @@ export class Pipeline {
       }
       Object.assign(step, { status, detail });
     });
+  }
+
+  isCancelled(runId) {
+    const run = this.store.snapshot().runs.find((item) => item.id === runId);
+    return run?.status === "cancelled";
   }
 
   async execute(runId, options = {}) {
@@ -136,6 +171,7 @@ export class Pipeline {
 
     try {
       await fs.mkdir(this.generatedDir, { recursive: true });
+      if (this.isCancelled(runId)) return;
       await this.updateRun(runId, {
         status: "running",
         mode: aiReady ? currentConfig.aiProvider || "openai" : mode,
@@ -157,8 +193,10 @@ export class Pipeline {
       } else {
         await this.updateStep(runId, "research", "running", aiReady ? "检索最近 7 天信号" : "使用内置演示选题");
         topic = aiReady ? await chooseTopic(settings, currentConfig) : demoTopic(settings);
+        if (this.isCancelled(runId)) return;
         await this.updateStep(runId, "research", "done", topic.title);
       }
+      if (this.isCancelled(runId)) return;
       logger.info("pipeline", `选题完成：${topic.title}`, { runId });
 
       const writingDetail = refArticle
@@ -168,12 +206,14 @@ export class Pipeline {
       let draft = aiReady
         ? await writeArticle(topic, settings, currentConfig, { referenceArticle: refArticle })
         : demoArticle(topic, settings);
+      if (this.isCancelled(runId)) return;
       await this.updateStep(runId, "writing", "done", draft.title);
 
       let humanizer = null;
       if (aiReady && settings.humanizeEnabled !== false) {
         await this.updateStep(runId, "humanize", "running", "按 Humanizer-zh 规则二次编辑");
         const result = await humanizeArticle(draft, topic, settings, currentConfig);
+        if (this.isCancelled(runId)) return;
         draft = result.draft;
         humanizer = result.score;
         await this.updateStep(runId, "humanize", "done", `自然度评分 ${humanizer.total}/50`);
@@ -312,12 +352,19 @@ export class Pipeline {
         edited: false,
         isImitation: Boolean(refArticle),
       };
+      const isCancelled = () => {
+        const snapshot = this.store.snapshot();
+        const currentRun = snapshot.runs.find((r) => r.id === runId);
+        return currentRun?.status === "cancelled";
+      };
+
       const completedAt = new Date().toISOString();
       const durationMs = Date.parse(completedAt) - Date.parse(runStartedAt);
       await this.store.update((state) => {
+        const run = state.runs.find((item) => item.id === runId);
+        if (run?.status === "cancelled") return;
         state.articles.unshift(article);
         state.articles = state.articles.slice(0, 100);
-        const run = state.runs.find((item) => item.id === runId);
         Object.assign(run, {
           status: "completed",
           completedAt,

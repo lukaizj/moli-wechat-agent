@@ -197,7 +197,9 @@ function renderRuns() {
   });
   const running = Boolean(activeRun || state.activeRunId);
   $("#run-button").disabled = running;
-  $("#run-button strong").textContent = running ? "Agent 正在工作" : "生成今日文章";
+  $("#run-button").classList.toggle("hidden", running);
+  $("#cancel-button").classList.toggle("hidden", !running);
+  $("#top-cancel-button").classList.toggle("hidden", !running);
   $("#agent-status-text").textContent = running ? "Agent 运行中" : "Agent 待命";
   $(".agent-status").classList.toggle("running", running);
   if (running && !pollTimer) pollTimer = setInterval(loadState, 1300);
@@ -230,6 +232,26 @@ async function startRun() {
   try {
     await api("/api/runs", { method: "POST", body: JSON.stringify({ trigger: "manual" }) });
     toast((state.integrations.ai ?? state.integrations.openai) ? "已开始研究选题，完成后会自动进入草稿箱" : "已启动演示流程，登录内容引擎后会生成正式稿");
+    await loadState();
+  } catch (error) {
+    toast(error.message, true);
+  }
+}
+
+async function cancelRun() {
+  try {
+    await api("/api/runs/cancel", { method: "POST", body: "{}" });
+    toast("已中断当前运行任务");
+    await loadState();
+  } catch (error) {
+    toast(error.message, true);
+  }
+}
+
+async function restartRun() {
+  try {
+    await api("/api/runs/restart", { method: "POST", body: JSON.stringify({ trigger: "restart" }) });
+    toast("已成功取消旧任务并重新开始生成");
     await loadState();
   } catch (error) {
     toast(error.message, true);
@@ -275,6 +297,9 @@ $$(".nav-item").forEach((button) => button.addEventListener("click", () => goTo(
 $$('[data-go]').forEach((button) => button.addEventListener("click", () => goTo(button.dataset.go)));
 $("#refresh-button").addEventListener("click", loadState);
 $("#run-button").addEventListener("click", startRun);
+$("#cancel-button").addEventListener("click", cancelRun);
+$("#top-cancel-button").addEventListener("click", cancelRun);
+$("#restart-button").addEventListener("click", restartRun);
 $("#latest-draft").addEventListener("click", () => {
   if (!state.articles[0]) return;
   selectedArticleId = state.articles[0].id;
