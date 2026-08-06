@@ -130,6 +130,10 @@ export async function scrapeWechatMetrics(url, fetchImpl = fetch) {
       html.match(/["']share_num["']\s*:\s*(\d+)/i) ||
       html.match(/share_count\s*[:=]\s*["']?(\d+)["']?/i);
 
+    if (!readsMatch && !likesMatch && !lookingMatch && !sharesMatch) {
+      return null;
+    }
+
     const reads = readsMatch ? Number(readsMatch[1]) : 0;
     const likes = likesMatch ? Number(likesMatch[1]) : 0;
     const looking = lookingMatch ? Number(lookingMatch[1]) : 0;

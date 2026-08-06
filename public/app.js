@@ -380,7 +380,7 @@ async function syncArticleMetrics(articleId, showSuccessToast = false) {
       populateRetrospectiveForm(article);
       if (urlInput && targetUrl) urlInput.value = targetUrl;
       if (showSuccessToast) {
-        toast("未能自动爬取到公开数据，请确认链接有效或对照公众号后台手动填入数值", true);
+        toast("提示：微信网页端屏蔽了无登录态的阅读量抓取。请对照公众号后台手动填入真实数据", true);
       }
     }
   } catch (error) {
