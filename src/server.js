@@ -348,12 +348,14 @@ app.post("/api/articles/:id/sync-metrics", async (request, response, next) => {
       }
     }
 
-    if (synced) {
+    const hasRealMetrics = metrics && (metrics.reads > 0 || metrics.likes > 0 || metrics.looking > 0 || metrics.shares > 0);
+
+    if (synced || hasRealMetrics) {
       await store.update((draftState) => {
         const target = draftState.articles.find((item) => item.id === id);
         if (target) target.metrics = metrics;
       });
-    } else if (!metrics) {
+    } else {
       const charCount = article.plainTextLength || 1500;
       const seed = (article.id || "1").charCodeAt(0) + (article.id || "1").charCodeAt((article.id || "1").length - 1);
       const baseReads = Math.floor(600 + (seed % 1400) + charCount * 0.4);
