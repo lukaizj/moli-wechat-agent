@@ -339,16 +339,17 @@ function populateRetrospectiveForm(article, metrics) {
   if (!form) return;
   const m = metrics || article?.metrics;
   if (m) {
-    form.elements.reads.value = m.reads ?? 0;
-    form.elements.likes.value = m.likes ?? 0;
-    form.elements.looking.value = m.looking ?? 0;
-    form.elements.shares.value = m.shares ?? 0;
+    form.elements.reads.value = m.reads !== undefined && m.reads !== null ? m.reads : "";
+    form.elements.likes.value = m.likes !== undefined && m.likes !== null ? m.likes : "";
+    form.elements.looking.value = m.looking !== undefined && m.looking !== null ? m.looking : "";
+    form.elements.shares.value = m.shares !== undefined && m.shares !== null ? m.shares : "";
   } else {
     form.elements.reads.value = "";
     form.elements.likes.value = "";
     form.elements.looking.value = "";
     form.elements.shares.value = "";
   }
+  if (form.elements.articleUrl) form.elements.articleUrl.value = article?.url || "";
   form.elements.feedback.value = article?.feedback || "";
 }
 
@@ -359,21 +360,31 @@ async function syncArticleMetrics(articleId, showSuccessToast = false) {
   const syncBtn = $("#sync-metrics-btn");
   if (syncBtn) {
     syncBtn.disabled = true;
-    syncBtn.textContent = "同步中…";
+    syncBtn.textContent = "爬取同步中…";
   }
   try {
-    const res = await api(`/api/articles/${articleId}/sync-metrics`, { method: "POST", body: "{}" });
-    if (res.metrics) {
+    const urlInput = $("#retro-article-url");
+    const url = urlInput ? urlInput.value.trim() : "";
+    const res = await api(`/api/articles/${articleId}/sync-metrics`, {
+      method: "POST",
+      body: JSON.stringify({ url }),
+    });
+    if (res.synced && res.metrics) {
       if (article) article.metrics = res.metrics;
       populateRetrospectiveForm(article, res.metrics);
-      if (showSuccessToast) toast(res.synced ? "已成功从微信公众号实时同步最新数据" : "已自动为您预填充与匹配推文数据");
+      toast("已成功爬取并同步该推文微信线上真实数据！");
+    } else {
+      populateRetrospectiveForm(article);
+      if (showSuccessToast) {
+        toast("未能自动获取到数据，请粘贴该推文已发布链接或手动填入数值", true);
+      }
     }
   } catch (error) {
     if (showSuccessToast) toast(error.message, true);
   } finally {
     if (syncBtn) {
       syncBtn.disabled = false;
-      syncBtn.textContent = "🔄 同步公众号数据";
+      syncBtn.textContent = "🔄 爬取 / 同步数据";
     }
   }
 }

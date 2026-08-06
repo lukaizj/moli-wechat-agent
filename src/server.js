@@ -9,7 +9,7 @@ import { isAiReady } from "./ai.js";
 import { plainTextLength } from "./article.js";
 import { checkCodexLogin } from "./codex.js";
 import { analyzeArticlePerformance } from "./retrospective.js";
-import { getStableAccessToken, getArticleTotalData } from "./wechat.js";
+import { getStableAccessToken, getArticleTotalData, scrapeWechatMetrics } from "./wechat.js";
 import { logger } from "./logger.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -310,64 +310,65 @@ app.post("/api/articles/:id/retrospective", async (request, response, next) => {
 app.post("/api/articles/:id/sync-metrics", async (request, response, next) => {
   try {
     const { id } = request.params;
+    const { url } = request.body || {};
     const state = store.snapshot();
     const article = state.articles.find((item) => item.id === id);
     if (!article) throw new Error("未找到对应文章记录");
 
-    let metrics = article.metrics || { reads: 0, likes: 0, looking: 0, shares: 0 };
+    let metrics = article.metrics || null;
     let synced = false;
 
-    const appId = config.wechatAppId || state.settings.wechatAppId;
-    const appSecret = config.wechatAppSecret || state.settings.wechatAppSecret;
-
-    if (appId && appSecret) {
-      try {
-        const accessToken = await getStableAccessToken({ ...config, wechatAppId: appId, wechatAppSecret: appSecret });
-        const today = new Date();
-        const endDate = today.toISOString().slice(0, 10);
-        const past = new Date(today.getTime() - 14 * 24 * 3600 * 1000);
-        const beginDate = past.toISOString().slice(0, 10);
-        const list = await getArticleTotalData(accessToken, beginDate, endDate);
-        const matched = list.find(
-          (item) =>
-            item.title === article.title ||
-            (item.title && article.title && (item.title.includes(article.title) || article.title.includes(item.title))),
-        );
-        if (matched && matched.details && matched.details.length > 0) {
-          const detail = matched.details[matched.details.length - 1];
-          metrics = {
-            reads: detail.int_page_read_user || detail.target_user || detail.int_page_read_count || 0,
-            likes: detail.like_num || 0,
-            looking: detail.add_to_fav_user || detail.ori_page_read_user || 0,
-            shares: detail.share_user || detail.share_count || 0,
-          };
-          synced = true;
-        }
-      } catch (err) {
-        logger.warn("wechat", `从微信同步数据受限: ${err.message}`);
+    // 1. 尝试直接从微信推文链接网页爬取真实公开指标
+    const targetUrl = url || article.url;
+    if (targetUrl) {
+      const scraped = await scrapeWechatMetrics(targetUrl);
+      if (scraped) {
+        metrics = scraped;
+        synced = true;
       }
     }
 
-    const hasRealMetrics = metrics && (metrics.reads > 0 || metrics.likes > 0 || metrics.looking > 0 || metrics.shares > 0);
+    // 2. 若未从链接爬取到，尝试调用官方数据 API
+    if (!synced) {
+      const appId = config.wechatAppId || state.settings.wechatAppId;
+      const appSecret = config.wechatAppSecret || state.settings.wechatAppSecret;
 
-    if (synced || hasRealMetrics) {
+      if (appId && appSecret) {
+        try {
+          const accessToken = await getStableAccessToken({ ...config, wechatAppId: appId, wechatAppSecret: appSecret });
+          const today = new Date();
+          const endDate = today.toISOString().slice(0, 10);
+          const past = new Date(today.getTime() - 14 * 24 * 3600 * 1000);
+          const beginDate = past.toISOString().slice(0, 10);
+          const list = await getArticleTotalData(accessToken, beginDate, endDate);
+          const matched = list.find(
+            (item) =>
+              item.title === article.title ||
+              (item.title && article.title && (item.title.includes(article.title) || article.title.includes(item.title))),
+          );
+          if (matched && matched.details && matched.details.length > 0) {
+            const detail = matched.details[matched.details.length - 1];
+            metrics = {
+              reads: detail.int_page_read_user || detail.target_user || detail.int_page_read_count || 0,
+              likes: detail.like_num || 0,
+              looking: detail.add_to_fav_user || detail.ori_page_read_user || 0,
+              shares: detail.share_user || detail.share_count || 0,
+            };
+            synced = true;
+          }
+        } catch (err) {
+          logger.warn("wechat", `从微信同步数据受限: ${err.message}`);
+        }
+      }
+    }
+
+    if (synced && metrics) {
       await store.update((draftState) => {
         const target = draftState.articles.find((item) => item.id === id);
-        if (target) target.metrics = metrics;
-      });
-    } else {
-      const charCount = article.plainTextLength || 1500;
-      const seed = (article.id || "1").charCodeAt(0) + (article.id || "1").charCodeAt((article.id || "1").length - 1);
-      const baseReads = Math.floor(600 + (seed % 1400) + charCount * 0.4);
-      metrics = {
-        reads: baseReads,
-        likes: Math.floor(baseReads * (0.035 + (seed % 20) / 1000)),
-        looking: Math.floor(baseReads * (0.015 + (seed % 15) / 1000)),
-        shares: Math.floor(baseReads * (0.025 + (seed % 18) / 1000)),
-      };
-      await store.update((draftState) => {
-        const target = draftState.articles.find((item) => item.id === id);
-        if (target) target.metrics = metrics;
+        if (target) {
+          target.metrics = metrics;
+          if (targetUrl) target.url = targetUrl;
+        }
       });
     }
 

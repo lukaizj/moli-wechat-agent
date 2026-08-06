@@ -95,3 +95,37 @@ export async function getArticleTotalData(accessToken, beginDate, endDate, fetch
   const payload = await parseResponse(response, "获取公众号文章数据");
   return payload.list || [];
 }
+
+export async function scrapeWechatMetrics(url, fetchImpl = fetch) {
+  if (!url || !url.startsWith("http")) return null;
+  try {
+    const response = await fetchImpl(url, {
+      headers: {
+        "User-Agent":
+          "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, Gecko) Chrome/120.0.0.0 Safari/537.36",
+        "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+      },
+    });
+    if (!response.ok) return null;
+    const html = await response.text();
+
+    const readsMatch = html.match(/read_num\s*[:=]\s*["']?(\d+)["']?/i) || html.match(/["']read_num["']\s*:\s*(\d+)/i);
+    const likesMatch = html.match(/like_num\s*[:=]\s*["']?(\d+)["']?/i) || html.match(/["']like_num["']\s*:\s*(\d+)/i);
+    const lookingMatch =
+      html.match(/old_like_num\s*[:=]\s*["']?(\d+)["']?/i) || html.match(/["']old_like_num["']\s*:\s*(\d+)/i);
+    const sharesMatch = html.match(/share_num\s*[:=]\s*["']?(\d+)["']?/i) || html.match(/["']share_num["']\s*:\s*(\d+)/i);
+
+    if (!readsMatch && !likesMatch && !lookingMatch && !sharesMatch) {
+      return null;
+    }
+
+    return {
+      reads: readsMatch ? Number(readsMatch[1]) : 0,
+      likes: likesMatch ? Number(likesMatch[1]) : 0,
+      looking: lookingMatch ? Number(lookingMatch[1]) : 0,
+      shares: sharesMatch ? Number(sharesMatch[1]) : 0,
+    };
+  } catch (err) {
+    return null;
+  }
+}
