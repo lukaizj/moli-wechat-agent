@@ -104,27 +104,38 @@ export async function scrapeWechatMetrics(url, fetchImpl = fetch) {
         "User-Agent":
           "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, Gecko) Chrome/120.0.0.0 Safari/537.36",
         "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+        "Accept-Language": "zh-CN,zh;q=0.9,en;q=0.8",
       },
     });
     if (!response.ok) return null;
     const html = await response.text();
 
-    const readsMatch = html.match(/read_num\s*[:=]\s*["']?(\d+)["']?/i) || html.match(/["']read_num["']\s*:\s*(\d+)/i);
-    const likesMatch = html.match(/like_num\s*[:=]\s*["']?(\d+)["']?/i) || html.match(/["']like_num["']\s*:\s*(\d+)/i);
+    const readsMatch =
+      html.match(/read_num\s*[:=]\s*["']?(\d+)["']?/i) ||
+      html.match(/["']read_num["']\s*:\s*(\d+)/i) ||
+      html.match(/read_count\s*[:=]\s*["']?(\d+)["']?/i);
+
+    const likesMatch =
+      html.match(/like_num\s*[:=]\s*["']?(\d+)["']?/i) ||
+      html.match(/["']like_num["']\s*:\s*(\d+)/i) ||
+      html.match(/like_count\s*[:=]\s*["']?(\d+)["']?/i);
+
     const lookingMatch =
-      html.match(/old_like_num\s*[:=]\s*["']?(\d+)["']?/i) || html.match(/["']old_like_num["']\s*:\s*(\d+)/i);
-    const sharesMatch = html.match(/share_num\s*[:=]\s*["']?(\d+)["']?/i) || html.match(/["']share_num["']\s*:\s*(\d+)/i);
+      html.match(/old_like_num\s*[:=]\s*["']?(\d+)["']?/i) ||
+      html.match(/["']old_like_num["']\s*:\s*(\d+)/i) ||
+      html.match(/looking_num\s*[:=]\s*["']?(\d+)["']?/i);
 
-    if (!readsMatch && !likesMatch && !lookingMatch && !sharesMatch) {
-      return null;
-    }
+    const sharesMatch =
+      html.match(/share_num\s*[:=]\s*["']?(\d+)["']?/i) ||
+      html.match(/["']share_num["']\s*:\s*(\d+)/i) ||
+      html.match(/share_count\s*[:=]\s*["']?(\d+)["']?/i);
 
-    return {
-      reads: readsMatch ? Number(readsMatch[1]) : 0,
-      likes: likesMatch ? Number(likesMatch[1]) : 0,
-      looking: lookingMatch ? Number(lookingMatch[1]) : 0,
-      shares: sharesMatch ? Number(sharesMatch[1]) : 0,
-    };
+    const reads = readsMatch ? Number(readsMatch[1]) : 0;
+    const likes = likesMatch ? Number(likesMatch[1]) : 0;
+    const looking = lookingMatch ? Number(lookingMatch[1]) : 0;
+    const shares = sharesMatch ? Number(sharesMatch[1]) : 0;
+
+    return { reads, likes, looking, shares };
   } catch (err) {
     return null;
   }

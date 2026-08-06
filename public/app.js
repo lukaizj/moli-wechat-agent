@@ -342,7 +342,11 @@ function populateRetrospectiveForm(article, metrics) {
   form.elements.likes.value = m.likes ?? 0;
   form.elements.looking.value = m.looking ?? 0;
   form.elements.shares.value = m.shares ?? 0;
-  if (form.elements.articleUrl) form.elements.articleUrl.value = article?.url || "";
+
+  const urlInput = $("#retro-article-url");
+  if (urlInput && !urlInput.value.trim() && article?.url) {
+    urlInput.value = article.url;
+  }
   form.elements.feedback.value = article?.feedback || "";
 }
 
@@ -350,26 +354,33 @@ async function syncArticleMetrics(articleId, showSuccessToast = false) {
   if (!articleId) return;
   const article = state.articles?.find((a) => a.id === articleId);
 
+  const urlInput = $("#retro-article-url");
+  const userTypedUrl = urlInput ? urlInput.value.trim() : "";
+  const targetUrl = userTypedUrl || article?.url || "";
+
   const syncBtn = $("#sync-metrics-btn");
   if (syncBtn) {
     syncBtn.disabled = true;
     syncBtn.textContent = "爬取同步中…";
   }
   try {
-    const urlInput = $("#retro-article-url");
-    const url = urlInput ? urlInput.value.trim() : "";
     const res = await api(`/api/articles/${articleId}/sync-metrics`, {
       method: "POST",
-      body: JSON.stringify({ url }),
+      body: JSON.stringify({ url: targetUrl }),
     });
     if (res.synced && res.metrics) {
-      if (article) article.metrics = res.metrics;
+      if (article) {
+        article.metrics = res.metrics;
+        if (targetUrl) article.url = targetUrl;
+      }
       populateRetrospectiveForm(article, res.metrics);
+      if (urlInput && targetUrl) urlInput.value = targetUrl;
       toast("已成功爬取并同步该推文微信线上真实数据！");
     } else {
       populateRetrospectiveForm(article);
+      if (urlInput && targetUrl) urlInput.value = targetUrl;
       if (showSuccessToast) {
-        toast("未能自动获取到数据，请粘贴该推文已发布链接或手动填入数值", true);
+        toast("未能自动爬取到公开数据，请确认链接有效或对照公众号后台手动填入数值", true);
       }
     }
   } catch (error) {
