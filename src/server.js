@@ -315,7 +315,7 @@ app.post("/api/articles/:id/sync-metrics", async (request, response, next) => {
     const article = state.articles.find((item) => item.id === id);
     if (!article) throw new Error("未找到对应文章记录");
 
-    let metrics = article.metrics || null;
+    let metrics = article.metrics || { reads: 0, likes: 0, looking: 0, shares: 0 };
     let synced = false;
 
     // 1. 尝试直接从微信推文链接网页爬取真实公开指标

@@ -337,18 +337,11 @@ function renderRetrospectiveReport(report, title = "") {
 function populateRetrospectiveForm(article, metrics) {
   const form = $("#retrospective-form");
   if (!form) return;
-  const m = metrics || article?.metrics;
-  if (m) {
-    form.elements.reads.value = m.reads !== undefined && m.reads !== null ? m.reads : "";
-    form.elements.likes.value = m.likes !== undefined && m.likes !== null ? m.likes : "";
-    form.elements.looking.value = m.looking !== undefined && m.looking !== null ? m.looking : "";
-    form.elements.shares.value = m.shares !== undefined && m.shares !== null ? m.shares : "";
-  } else {
-    form.elements.reads.value = "";
-    form.elements.likes.value = "";
-    form.elements.looking.value = "";
-    form.elements.shares.value = "";
-  }
+  const m = metrics || article?.metrics || { reads: 0, likes: 0, looking: 0, shares: 0 };
+  form.elements.reads.value = m.reads ?? 0;
+  form.elements.likes.value = m.likes ?? 0;
+  form.elements.looking.value = m.looking ?? 0;
+  form.elements.shares.value = m.shares ?? 0;
   if (form.elements.articleUrl) form.elements.articleUrl.value = article?.url || "";
   form.elements.feedback.value = article?.feedback || "";
 }
